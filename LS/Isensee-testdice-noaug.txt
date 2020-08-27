@@ -1,0 +1,55 @@
+/home/yjj/anaconda3/envs/torch/bin/python /home/yjj/MMs/LS/testNet.py
+LV_Dice_0: 0.891528 || RV_Dice_0: 0.455553 || Myo_Dice_0: 0.783181
+LV_Dice_1: 0.854311 || RV_Dice_1: 0.865709 || Myo_Dice_1: 0.737770
+LV_Dice_2: 0.933350 || RV_Dice_2: 0.703297 || Myo_Dice_2: 0.799611
+LV_Dice_3: 0.837832 || RV_Dice_3: 0.853778 || Myo_Dice_3: 0.724963
+LV_Dice_4: 0.938827 || RV_Dice_4: 0.920282 || Myo_Dice_4: 0.810141
+LV_Dice_5: 0.935646 || RV_Dice_5: 0.846096 || Myo_Dice_5: 0.809581
+LV_Dice_6: 0.925556 || RV_Dice_6: 0.940588 || Myo_Dice_6: 0.755940
+LV_Dice_7: 0.922345 || RV_Dice_7: 0.876571 || Myo_Dice_7: 0.710874
+LV_Dice_8: 0.740988 || RV_Dice_8: 0.358268 || Myo_Dice_8: 0.541254
+LV_Dice_9: 0.874597 || RV_Dice_9: 0.526902 || Myo_Dice_9: 0.693372
+LV_Dice_10: 0.858432 || RV_Dice_10: 0.916499 || Myo_Dice_10: 0.606434
+LV_Dice_11: 0.921677 || RV_Dice_11: 0.925666 || Myo_Dice_11: 0.775081
+LV_Dice_12: 0.931241 || RV_Dice_12: 0.803014 || Myo_Dice_12: 0.796839
+LV_Dice_13: 0.928855 || RV_Dice_13: 0.913250 || Myo_Dice_13: 0.811233
+LV_Dice_14: 0.895891 || RV_Dice_14: 0.849526 || Myo_Dice_14: 0.807938
+LV_Dice_15: 0.897420 || RV_Dice_15: 0.903814 || Myo_Dice_15: 0.746089
+LV_Dice_16: 0.889721 || RV_Dice_16: 0.841947 || Myo_Dice_16: 0.742403
+LV_Dice_17: 0.887280 || RV_Dice_17: 0.862532 || Myo_Dice_17: 0.700134
+LV_Dice_18: 0.918593 || RV_Dice_18: 0.842105 || Myo_Dice_18: 0.681426
+LV_Dice_19: 0.935668 || RV_Dice_19: 0.854840 || Myo_Dice_19: 0.848393
+LV_Dice_20: 0.895442 || RV_Dice_20: 0.790346 || Myo_Dice_20: 0.671463
+LV_Dice_21: 0.857822 || RV_Dice_21: 0.909445 || Myo_Dice_21: 0.672974
+LV_Dice_22: 0.933705 || RV_Dice_22: 0.836194 || Myo_Dice_22: 0.801173
+LV_Dice_23: 0.932499 || RV_Dice_23: 0.860023 || Myo_Dice_23: 0.776391
+LV_Dice_24: 0.759265 || RV_Dice_24: 0.877846 || Myo_Dice_24: 0.623328
+LV_Dice_25: 0.662306 || RV_Dice_25: 0.524008 || Myo_Dice_25: 0.680100
+LV_Dice_26: 0.940979 || RV_Dice_26: 0.764321 || Myo_Dice_26: 0.773856
+LV_Dice_27: 0.888816 || RV_Dice_27: 0.570371 || Myo_Dice_27: 0.708509
+LV_Dice_28: 0.878904 || RV_Dice_28: 0.864091 || Myo_Dice_28: 0.724145
+LV_Dice_29: 0.855001 || RV_Dice_29: 0.850144 || Myo_Dice_29: 0.854000
+LV_Dice_30: 0.929302 || RV_Dice_30: 0.881972 || Myo_Dice_30: 0.816834
+LV_Dice_31: 0.879411 || RV_Dice_31: 0.865181 || Myo_Dice_31: 0.762660
+LV_Dice_32: 0.907871 || RV_Dice_32: 0.700466 || Myo_Dice_32: 0.737635
+LV_Dice_33: 0.335028 || RV_Dice_33: 0.057160 || Myo_Dice_33: 0.550686
+LV_Dice_34: 0.876265 || RV_Dice_34: 0.484549 || Myo_Dice_34: 0.657913
+LV_Dice_35: 0.715101 || RV_Dice_35: 0.713822 || Myo_Dice_35: 0.576238
+LV_Dice_36: 0.928137 || RV_Dice_36: 0.913940 || Myo_Dice_36: 0.813562
+LV_Dice_37: 0.778670 || RV_Dice_37: 0.628659 || Myo_Dice_37: 0.791129
+LV_Dice_38: 0.827065 || RV_Dice_38: 0.906699 || Myo_Dice_38: 0.827307
+LV_Dice_39: 0.905622 || RV_Dice_39: 0.846663 || Myo_Dice_39: 0.825547
+LV_Dice_40: 0.925734 || RV_Dice_40: 0.912636 || Myo_Dice_40: 0.821093
+LV_Dice_41: 0.870697 || RV_Dice_41: 0.756777 || Myo_Dice_41: 0.796869
+LV_Dice_42: 0.831880 || RV_Dice_42: 0.819460 || Myo_Dice_42: 0.672095
+LV_Dice_43: 0.869603 || RV_Dice_43: 0.420510 || Myo_Dice_43: 0.727734
+LV_Dice_44: 0.935475 || RV_Dice_44: 0.853833 || Myo_Dice_44: 0.839965
+LV_Dice_45: 0.844390 || RV_Dice_45: 0.615793 || Myo_Dice_45: 0.571151
+LV_Dice_46: 0.859484 || RV_Dice_46: 0.862439 || Myo_Dice_46: 0.673702
+LV_Dice_47: 0.943802 || RV_Dice_47: 0.859635 || Myo_Dice_47: 0.814091
+LV_Dice_48: 0.906799 || RV_Dice_48: 0.862749 || Myo_Dice_48: 0.745115
+LV_Dice_49: 0.694882 || RV_Dice_49: 0.863521 || Myo_Dice_49: 0.705901
+===============================================
+LV_Dice_avg: 0.865794247890188 RV_Dice_avg: 0.774669783315838 Myo_Dice_avg: 0.737916454372897
+
+Process finished with exit code 0
