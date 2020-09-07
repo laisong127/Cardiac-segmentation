@@ -47,12 +47,12 @@ def sigmoid_dice(output, target, alpha=1e-4):
       C: ClassNum
       ...: Size of img
     """
-
     LV_dice = dice(output[:,1,...], (target == 1).float(), eps=alpha)
     Myo_dice = dice(output[:,2,...], (target == 2).float(), eps=alpha)
     RV_dice = dice(output[:,3,...], (target == 3).float(), eps=alpha)
     # logging.info('1:{:.4f} | 2:{:.4f} | 3:{:.4f}'.format(1-loss1.data, 1-loss2.data, 1-loss3.data))
     # print('1:{: .4f} | 2:{: .4f} | 3:{: .4f}'.format(LV_dice, Myo_dice, RV_dice))
+
     return LV_dice.item(), RV_dice.item(), Myo_dice.item(), (3 - LV_dice - Myo_dice - RV_dice) / 3
 
 

@@ -10,16 +10,17 @@ import MRIdataset
 from torch.utils.data import DataLoader
 from advanced_model import DeepSupervision_U_Net
 from ResNetUNet import ResNetUNet
+from advanced_model import CleanU_Net
 from ValModel import val_model
 from criterions import sigmoid_dice
 from transform import imageaug
 import torch.nn.functional as F
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-learning_rate = 1e-3
+learning_rate = 5e-4
 
 
-def train_model(model, DC_loss, optimizer, dataload, num_epochs=400):
+def train_model(model, criterion, optimizer, dataload, num_epochs=400):
     # model.load_state_dict(torch.load('./3dunet_model_save/weights_199.pth'))
     MAX = 0
     index = 0
@@ -58,9 +59,9 @@ def train_model(model, DC_loss, optimizer, dataload, num_epochs=400):
                 labels = label_2d_fortrain.long().to(device)
                 outputs = model(inputs)  # (1,4,H,W)
 
-                # print(outputs.shape, labels.shape)
+                # loss_2d = criterion(outputs,labels)
                 outputs_softmax = F.softmax(outputs,dim=1)
-                _,_,_,loss_2d = DC_loss(outputs_softmax, labels)
+                _,_,_,loss_2d = criterion(outputs_softmax, labels)
                 # print(loss)
                 loss_2d.backward()  # 梯度下降,计算出梯度
                 optimizer.step()  # 更新参数一次：所有的优化器Optimizer都实现了step()方法来对所有的参数进行更新
@@ -72,7 +73,9 @@ def train_model(model, DC_loss, optimizer, dataload, num_epochs=400):
             step += 1
         np.savetxt('./3dunet_model_save/loss_%d.txt' % epoch, save_loss)
         print("epoch %d loss:%0.6f" % (epoch, epoch_loss))
-        optimizer.param_groups[0]["lr"] = optimizer.param_groups[0]["lr"] * 0.9
+
+        if (epoch + 1) % 10 == 0:
+            optimizer.param_groups[0]["lr"] = optimizer.param_groups[0]["lr"] * 0.98
 
         if (epoch+1) % 50 == 0:
             Mean_metric = val_model(model)
@@ -91,14 +94,14 @@ def train_model(model, DC_loss, optimizer, dataload, num_epochs=400):
 
 def train():
     # model = DeepSupervision_U_Net(in_channels=1, out_channels=4).to(device)
-    model = ResNetUNet(4).to(device)
+    # model = ResNetUNet(4).to(device)
+    model = CleanU_Net(1,4).to(device)
     batch_size = 1
     # 损失函数
-    criterion_CE = torch.nn.CrossEntropyLoss().cuda(0)
+    criterion_CE = torch.nn.CrossEntropyLoss()
     criterion_DC = sigmoid_dice
     # 梯度下降
-    optimizer = optim.Adam(model.parameters(),
-                           lr=learning_rate)  # model.parameters():Returns an iterator over module parameters
+    optimizer = optim.Adam(model.parameters(), lr=learning_rate)  # model.parameters():Returns an iterator over module parameters
     # 加载数据集
     # scheduler = lr_scheduler.StepLR(optimizer, step_size=250, gamma=0.98)
     liver_dataset = MRIdataset.LiverDataset(MRIdataset.imagepath, MRIdataset.labelpath, MRIdataset.img_ids,

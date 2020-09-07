@@ -72,6 +72,7 @@ def val_model(model):
     RV_Dice_avg = RV_Dice / i
     Myo_Dice_avg = Myo_Dice / i
     Mean_metric = (LV_Dice_avg+RV_Dice_avg+Myo_Dice_avg)/3
+    print('Mean_metric:',Mean_metric)
 
     return Mean_metric
 

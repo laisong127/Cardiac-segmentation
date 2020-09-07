@@ -9,8 +9,8 @@ import numpy as np
 def imageaug(img_label):
     seq = iaa.Sequential([
         iaa.Fliplr(0.5),  # 左右翻转
-        iaa.Flipud(0.5),  # 上下翻转
-        iaa.Sometimes(0.3, iaa.Affine(
+        iaa.Flipud(0),  # 上下翻转
+        iaa.Sometimes(0, iaa.Affine(
             rotate=(-10, 10),  # 旋转一定角度
             shear=(-10, 10),  # 拉伸一定角度（矩形变为平行四边形状）
             order=0,  # order=[0, 1],   #使用最邻近差值或者双线性差值
@@ -18,9 +18,9 @@ def imageaug(img_label):
             mode='constant'  # mode=ia.ALL  #定义填充图像外区域的方法
         )),
         # iaa.Crop(percent=(0, 0.1)),
-        iaa.Sometimes(0.3, iaa.ElasticTransformation(alpha=(0, 10.0), sigma=(4.0, 6.0))) , # 把像素移动到周围的地方
-        iaa.Sometimes(0.3,iaa.GaussianBlur(sigma=0.1)),
-        iaa.Sometimes(0.3,iaa.ContrastNormalization(1.1))
+        iaa.Sometimes(0, iaa.ElasticTransformation(alpha=(0, 10.0), sigma=(4.0, 6.0))) , # 把像素移动到周围的地方
+        iaa.Sometimes(0,iaa.GaussianBlur(sigma=0.1)),
+        iaa.Sometimes(0,iaa.ContrastNormalization(1.1))
     ])
     label = img_label[1]
     imglab_aug = seq.augment_images(img_label)

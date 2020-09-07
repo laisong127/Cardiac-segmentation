@@ -2,14 +2,14 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 loss = []
-for i in range(200):
+for i in range(30):
     loss.append(sum(np.loadtxt('./3dunet_model_save/loss_%d.txt' % i)))
 
 y = np.array(loss)
 y = y.flatten()
 # y = np.loadtxt('./3dunet_model_save/loss_99.txt')
 # print(y)
-x = np.linspace(0,200-1,200)
+x = np.linspace(0,30-1,30)
 # y = np.sin(x)
 # print(x)
 
