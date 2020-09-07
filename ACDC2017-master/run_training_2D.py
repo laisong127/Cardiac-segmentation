@@ -14,6 +14,7 @@
 
 
 import matplotlib
+
 matplotlib.use('Agg')
 import lasagne
 import theano.tensor as T
@@ -37,12 +38,12 @@ from batchgenerators.transforms import RandomCropTransform
 
 
 def create_data_gen_train(patient_data_train, BATCH_SIZE, num_classes,
-                                  num_workers=2, num_cached_per_worker=2,
-                                  do_elastic_transform=False, alpha=(0., 1300.), sigma=(10., 13.),
-                                  do_rotation=False, a_x=(0., 2*np.pi), a_y=(0., 2*np.pi), a_z=(0., 2*np.pi),
-                                  do_scale=True, scale_range=(0.75, 1.25), seeds=None):
+                          num_workers=2, num_cached_per_worker=2,
+                          do_elastic_transform=False, alpha=(0., 1300.), sigma=(10., 13.),
+                          do_rotation=False, a_x=(0., 2 * np.pi), a_y=(0., 2 * np.pi), a_z=(0., 2 * np.pi),
+                          do_scale=True, scale_range=(0.75, 1.25), seeds=None):
     if seeds is None:
-        seeds = [None]*num_workers
+        seeds = [None] * num_workers
     elif seeds == 'range':
         seeds = range(num_workers)
     else:
@@ -52,7 +53,7 @@ def create_data_gen_train(patient_data_train, BATCH_SIZE, num_classes,
 
     tr_transforms = []
     tr_transforms.append(MirrorTransform((0, 1)))
-    tr_transforms.append(RndTransform(SpatialTransform((352, 352), list(np.array((352, 352))//2),
+    tr_transforms.append(RndTransform(SpatialTransform((352, 352), list(np.array((352, 352)) // 2),
                                                        do_elastic_transform, alpha,
                                                        sigma,
                                                        do_rotation, a_x, a_y,
@@ -72,14 +73,14 @@ def create_data_gen_train(patient_data_train, BATCH_SIZE, num_classes,
 
 def run(config_file, fold=0):
     cf = imp.load_source('cf', config_file)
-    print('fold:',fold)
+    print('fold:', fold)
     dataset_root = cf.dataset_root
     # ==================================================================================================================
     BATCH_SIZE = cf.BATCH_SIZE
     INPUT_PATCH_SIZE = cf.INPUT_PATCH_SIZE
     num_classes = cf.num_classes
     EXPERIMENT_NAME = cf.EXPERIMENT_NAME
-    results_dir = os.path.join(cf.results_dir, "fold%d/"%fold)
+    results_dir = os.path.join(cf.results_dir, "fold%d/" % fold)
     if not os.path.isdir(results_dir):
         os.mkdir(results_dir)
     n_epochs = cf.n_epochs
@@ -87,14 +88,14 @@ def run(config_file, fold=0):
     base_lr = cf.base_lr
     n_batches_per_epoch = cf.n_batches_per_epoch  # 100
     n_test_batches = cf.n_test_batches  # 10
-    n_feedbacks_per_epoch = cf.n_feedbacks_per_epoch  #10
+    n_feedbacks_per_epoch = cf.n_feedbacks_per_epoch  # 10
     num_workers = cf.num_workers
     workers_seeds = cf.workers_seeds
     # ==================================================================================================================
 
     # this is seeded, will be identical each time
     train_keys, test_keys = get_split(fold)
-    print('train_keys:',train_keys)
+    print('train_keys:', train_keys)
     print('val_keys:', test_keys)
 
     train_data = load_dataset(train_keys, root_dir=dataset_root)
@@ -105,7 +106,7 @@ def run(config_file, fold=0):
 
     nt, net, seg_layer = cf.nt, cf.net, cf.seg_layer
     output_layer_for_loss = net
-    #draw_to_file(lasagne.layers.get_all_layers(net), os.path.join(results_dir, 'network.png'))
+    # draw_to_file(lasagne.layers.get_all_layers(net), os.path.join(results_dir, 'network.png'))
 
     data_gen_validation = BatchGenerator_2D(val_data, BATCH_SIZE, num_batches=None, seed=False,
                                             PATCH_SIZE=INPUT_PATCH_SIZE)
@@ -145,14 +146,13 @@ def run(config_file, fold=0):
     train_fn = theano.function([x_sym, seg_sym], [loss, acc_train, loss_vec], updates=updates)
     val_fn = theano.function([x_sym, seg_sym], [loss_val, acc, dc])
 
-    dice_scores=None
+    dice_scores = None
     data_gen_train = create_data_gen_train(train_data, BATCH_SIZE,
                                            num_classes, num_workers=num_workers,
                                            do_elastic_transform=True, alpha=(100., 350.), sigma=(14., 17.),
-                                           do_rotation=True, a_x=(0, 2.*np.pi), a_y=(-0.000001, 0.00001),
+                                           do_rotation=True, a_x=(0, 2. * np.pi), a_y=(-0.000001, 0.00001),
                                            a_z=(-0.000001, 0.00001), do_scale=True, scale_range=(0.7, 1.3),
                                            seeds=workers_seeds)  # new se has no brain mask
-
 
     all_training_losses = []
     all_validation_losses = []
@@ -160,7 +160,6 @@ def run(config_file, fold=0):
     all_training_accuracies = []
     all_val_dice_scores = []
     epoch = 0
-
 
     while epoch < n_epochs:
         if epoch == 100:
@@ -180,8 +179,8 @@ def run(config_file, fold=0):
                                                    do_scale=True, scale_range=(0.8, 1.2),
                                                    seeds=workers_seeds)  # new se has no brain mask
         epoch_start_time = time.time()
-        learning_rate.set_value(np.float32(base_lr* lr_decay**epoch))
-        print ("epoch: ", epoch, " learning rate: ", learning_rate.get_value())
+        learning_rate.set_value(np.float32(base_lr * lr_decay ** epoch))
+        print("epoch: ", epoch, " learning rate: ", learning_rate.get_value())
         train_loss = 0
         train_acc_tmp = 0
         train_loss_tmp = 0
@@ -190,19 +189,20 @@ def run(config_file, fold=0):
             data = data_dict["data"].astype(np.float32)
             # print(data.shape) (2,1,352,352) where batchsize = 2
             seg = data_dict["seg_onehot"].astype(np.float32).transpose(0, 2, 3, 1).reshape((-1, num_classes))
-            if batch_ctr != 0 and batch_ctr % int(np.floor(n_batches_per_epoch/n_feedbacks_per_epoch)) == 0:
-                print ("number of batches: ", batch_ctr, "/", n_batches_per_epoch)
-                print ("training_loss since last update: ", \
-                    train_loss_tmp/np.floor(n_batches_per_epoch/(n_feedbacks_per_epoch)), " train accuracy: ", \
-                    train_acc_tmp/np.floor(n_batches_per_epoch/n_feedbacks_per_epoch))
+            if batch_ctr != 0 and batch_ctr % int(np.floor(n_batches_per_epoch / n_feedbacks_per_epoch)) == 0:
+                print("number of batches: ", batch_ctr, "/", n_batches_per_epoch)
+                print("training_loss since last update: ", \
+                      train_loss_tmp / np.floor(n_batches_per_epoch / (n_feedbacks_per_epoch)), " train accuracy: ", \
+                      train_acc_tmp / np.floor(n_batches_per_epoch / n_feedbacks_per_epoch))
                 """
                 n_batches_per_epoch:   How many batches in an epoch, 100 here.
                 n_feedbacks_per_epoch: How many feedbacks are given in an epoch, 10 here,it means in an epoch we will 
                                        calculate loss 10 times. 
                 
                 """
-                all_training_losses.append(train_loss_tmp/np.floor(n_batches_per_epoch/(n_feedbacks_per_epoch)))  # for showing and saving result .png
-                all_training_accuracies.append(train_acc_tmp/np.floor(n_batches_per_epoch/(n_feedbacks_per_epoch)))
+                all_training_losses.append(train_loss_tmp / np.floor(
+                    n_batches_per_epoch / (n_feedbacks_per_epoch)))  # for showing and saving result .png
+                all_training_accuracies.append(train_acc_tmp / np.floor(n_batches_per_epoch / (n_feedbacks_per_epoch)))
                 train_loss_tmp = 0
                 train_acc_tmp = 0
                 if len(all_val_dice_scores) > 0:
@@ -211,7 +211,7 @@ def run(config_file, fold=0):
                              all_validation_accuracies, os.path.join(results_dir, "%s.png" % EXPERIMENT_NAME),
                              n_feedbacks_per_epoch, val_dice_scores=dice_scores, dice_labels=["0", "1", "2", "3"])
 
-            if batch_ctr > (n_batches_per_epoch-1):
+            if batch_ctr > (n_batches_per_epoch - 1):
                 break
             loss_vec, acc, l = train_fn(data, seg)
 
@@ -224,7 +224,7 @@ def run(config_file, fold=0):
             #     break
 
         train_loss /= n_batches_per_epoch
-        print ("training loss average on epoch: ", train_loss)
+        print("training loss average on epoch: ", train_loss)
 
         val_loss = 0
         accuracies = []
@@ -241,27 +241,28 @@ def run(config_file, fold=0):
             val_loss += loss
             accuracies.append(acc)
             valid_batch_ctr += 1
-            if valid_batch_ctr > (n_test_batches-1):
+            if valid_batch_ctr > (n_test_batches - 1):
                 break
         all_dice = np.vstack(all_dice)
         dice_means = np.zeros(num_classes)
         for i in range(num_classes):
-            dice_means[i] = all_dice[all_dice[:, i]!=2, i].mean()
+            dice_means[i] = all_dice[all_dice[:, i] != 2, i].mean()
         val_loss /= n_test_batches
-        print ("val loss: ", val_loss)
-        print ("val acc: ", np.mean(accuracies), "\n")
-        print ("val dice: ", dice_means)
-        print ("This epoch took %f sec" % (time.time()-epoch_start_time))
+        print("val loss: ", val_loss)
+        print("val acc: ", np.mean(accuracies), "\n")
+        print("val dice: ", dice_means)
+        print("This epoch took %f sec" % (time.time() - epoch_start_time))
         all_val_dice_scores.append(dice_means)
         all_validation_losses.append(val_loss)
         all_validation_accuracies.append(np.mean(accuracies))
         dice_scores = np.concatenate(all_val_dice_scores, axis=0).reshape((-1, num_classes))
         plotProgress(all_training_losses, all_training_accuracies, all_validation_losses, all_validation_accuracies,
-                     os.path.join(results_dir, "%s.png" % EXPERIMENT_NAME), n_feedbacks_per_epoch, val_dice_scores=dice_scores,
+                     os.path.join(results_dir, "%s.png" % EXPERIMENT_NAME), n_feedbacks_per_epoch,
+                     val_dice_scores=dice_scores,
                      dice_labels=["brain", "1", "2", "3", "4", "5"])
         with open(os.path.join(results_dir, "%s_Params.pkl" % (EXPERIMENT_NAME)), 'wb') as f:
             cPickle.dump(lasagne.layers.get_all_param_values(output_layer_for_loss), f)
-        with open(os.path.join(results_dir, "%s_allLossesNAccur.pkl"% (EXPERIMENT_NAME)), 'wb') as f:
+        with open(os.path.join(results_dir, "%s_allLossesNAccur.pkl" % (EXPERIMENT_NAME)), 'wb') as f:
             cPickle.dump([all_training_losses, all_training_accuracies, all_validation_losses,
                           all_validation_accuracies, all_val_dice_scores], f)
         epoch += 1
@@ -269,29 +270,34 @@ def run(config_file, fold=0):
 
 if __name__ == "__main__":
     import argparse
+
     parser = argparse.ArgumentParser()
-    parser.add_argument("-f", help="fold", type=int,default=0)
-    parser.add_argument("-c", help="config file", type=str,default='./UNet2D_config.py')
+    parser.add_argument("-f", help="fold", type=int, default=0)
+    parser.add_argument("-c", help="config file", type=str, default='./UNet2D_config.py')
     args = parser.parse_args()
     run(args.c, args.f)
 
-    # """
-    # VAL_RESULT:
-    #     [0.99925959 0.82489681 0.88035041 0.93499696]
-    #     [0.9991104  0.94312811 0.89640695 0.95641023]
-    #     [0.99889517 0.85848427 0.91053855 0.95131826]
-    #     [0.99895227 0.92221969 0.88853139 0.96168077]
-    # ATTENTION !
-    #     0 : background
-    #     1 : RV
-    #     2 : Myo
-    #     3 : LV
-    #     (from left to right : 0~3)
-    # """
+    """
+    BESE_VAL_RESULT:
+     ________________________________________________________________
+    |  epoch   background         RV           Myo           LV      |
+    |  [164] [*0.99925959*   0.82489681    0.88035041    0.93499696 ]|
+    |  [241] [ 0.9991104    *0.94312811*   0.89640695    0.95641023 ]|
+    |  [266] [ 0.99889517    0.85848427   *0.91053855*   0.95131826 ]|
+    |  [212] [ 0.99895227    0.92221969    0.88853139   *0.96168077*]|
+    |________________________________________________________________|
+    ATTENTION !
+        0 : background
+        1 : RV
+        2 : Myo
+        3 : LV
+        (from left to right : 0~3)
+    """
     # f = open('/home/laisong/github/Cardiac-segmentation/ACDC2017-master/result/ACDC_lasagne/UNet2D_final/fold0/UNet2D_final_allLossesNAccur.pkl','rb')
     # all_training_losses, all_training_accuracies, all_validation_losses,all_validation_accuracies, all_val_dice_scores= cPickle.load(f)
     # # print(np.array(all_val_dice_scores).size)
     # all_val_dice_scores_numpy = np.array(all_val_dice_scores).reshape(300,4)
     # index = np.argmax(all_val_dice_scores_numpy,axis=0)
+    # print(index.reshape(4,1))
     # for i in range(len(index)):
     #     print(all_val_dice_scores_numpy[index[i]])
