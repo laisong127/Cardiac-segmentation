@@ -61,11 +61,11 @@ val_plot_segmentation = False
 val_min_size = [0, INPUT_PATCH_SIZE[0], INPUT_PATCH_SIZE[1]]
 
 # 4d predictions
-dataset_root_raw = '/home/laisong/ACDC2017/training_all'
+dataset_root_raw = '/home/laisong/ACDC2017/training_all'  # ACDC2017 training data path
 target_spacing = (None, 1.25, 1.25)
 min_size = val_min_size
 
-dataset_root_test = "/media/fabian/My Book/datasets/ACDC/testing/testing/"
+dataset_root_test = "/home/laisong/ACDC2017/testing/"  # ACDC2017 testing data path
 test_out_folder = os.path.join(results_dir, "test_predictions")
 if not os.path.isdir(test_out_folder):
     os.mkdir(test_out_folder)

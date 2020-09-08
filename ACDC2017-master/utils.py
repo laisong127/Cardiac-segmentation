@@ -37,10 +37,10 @@ def postprocess_prediction(seg):
 def pad_patient_3D(patient, shape_must_be_divisible_by=16, min_size=None):
     shp = patient.shape
     new_shp = [shp[0], shp[1] + shape_must_be_divisible_by - shp[1] % shape_must_be_divisible_by, shp[2] +
-               shape_must_be_divisible_by - shp[2] % shape_must_be_divisible_by]
+               shape_must_be_divisible_by - shp[2] % shape_must_be_divisible_by]  # assert image size can be  devided by 16
     if min_size is not None:
-        new_shp = np.max(np.vstack((np.array(new_shp), np.array(min_size))), 0)
-    for i in range(len(shp) - 1):
+        new_shp = np.max(np.vstack((np.array(new_shp), np.array(min_size))), 0)  # if set the min image size
+    for i in range(len(shp) - 1):  # iter batch
         if shp[i + 1] % shape_must_be_divisible_by == 0:
             new_shp[i + 1] -= shape_must_be_divisible_by
     return reshape_by_padding_upper_coords(patient, new_shp, 0), shp
@@ -108,9 +108,9 @@ def predict_patient_2D_net(pred_fn, patient_data, do_mirroring, num_repeats, BAT
                            new_shape_must_be_divisible_by=16, preprocess_fn=None, min_size=None):
     if preprocess_fn is not None:
         patient_data = preprocess_fn(patient_data)
-    patient, old_shape = pad_patient_3D(patient_data, new_shape_must_be_divisible_by, min_size=min_size)
+    patient, old_shape = pad_patient_3D(patient_data, new_shape_must_be_divisible_by, min_size=min_size)  # padding 3d image if neccessary
     new_shp = patient.shape
-    data = np.zeros(tuple([1] + [1] + list(new_shp[1:])), dtype=np.float32)
+    data = np.zeros(tuple([1] + [1] + list(new_shp[1:])), dtype=np.float32)  # data shape (1,1,new_H,new_W)
     seg_pred = np.zeros(patient.shape, dtype=np.uint8)
     seg_pred_softmax = np.zeros([4] + list(patient.shape), dtype=np.float32)
 
@@ -147,7 +147,7 @@ def predict_patient_2D_net(pred_fn, patient_data, do_mirroring, num_repeats, BAT
                 all_preds.append(p)
 
         stacked = np.vstack(all_preds)
-        predicted_segmentation = stacked.mean(0).argmax(0)
+        predicted_segmentation = stacked.mean(0).argmax(0)  # using mean() because of repeat operation
         seg_pred[slice] = predicted_segmentation
         seg_pred_softmax[:, slice] = stacked.mean(0)
     seg_pred = postprocess_prediction(seg_pred)

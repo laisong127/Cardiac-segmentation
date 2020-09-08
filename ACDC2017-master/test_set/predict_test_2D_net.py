@@ -35,7 +35,7 @@ def predict_test(pred_fn, results_out_folder, test_keys, dataset_root_raw, BATCH
                  target_spacing=(None, 1.25, 1.25)):
     patient_info = generate_patient_info(dataset_root_raw)
     for patient_id in test_keys:
-        print(patient_id)
+        print('patient_id:.{}'.format(patient_id))
         if not os.path.isdir(results_out_folder):
             os.mkdir(results_out_folder)
 
@@ -64,7 +64,7 @@ def predict_test(pred_fn, results_out_folder, test_keys, dataset_root_raw, BATCH
 
         np.savez_compressed(
             os.path.join(results_out_folder, "patient%03.0d_2D_net.npz" % patient_id), es=seg_pred_softmax_es,
-            ed=seg_pred_softmax_ed)
+            ed=seg_pred_softmax_ed)  # save seg results as npy file
 
 
 def run(config_file, fold=0):
@@ -72,6 +72,7 @@ def run(config_file, fold=0):
     print ('fold:',fold)
     # this is seeded, will be identical each time
     test_keys = range(101, 151)
+    print('test keys: .{}'.format(test_keys))
 
     experiment_name = cf.EXPERIMENT_NAME
     results_folder = os.path.join(cf.results_dir,  "fold%d/"%fold)
@@ -92,9 +93,9 @@ def run(config_file, fold=0):
     if not os.path.isdir(test_out_folder):
         os.mkdir(test_out_folder)
 
-    with open(os.path.join("../",results_folder, "%s_Params.pkl" % (experiment_name)), 'r') as f:
+    with open(os.path.join("../",results_folder, "%s_Params.pkl" % (experiment_name)), 'rb') as f:
         params = cPickle.load(f)
-        lasagne.layers.set_all_param_values(output_layer, params)
+        lasagne.layers.set_all_param_values(output_layer, params)  # load net's params
 
     print ("compiling theano functions")
     output = softmax_helper(lasagne.layers.get_output(output_layer, x_sym, deterministic=not cf.val_bayesian_prediction,
@@ -110,8 +111,8 @@ def run(config_file, fold=0):
 if __name__ == "__main__":
     import argparse
     parser = argparse.ArgumentParser()
-    parser.add_argument("-f", help="fold", type=int)
-    parser.add_argument("-c", help="config file", type=str)
+    parser.add_argument("-f", help="fold", type=int, default=0)
+    parser.add_argument("-c", help="config file", type=str, default='/home/laisong/github/Cardiac-segmentation/ACDC2017-master/UNet2D_config.py')
     args = parser.parse_args()
     run(args.c, args.f)
 

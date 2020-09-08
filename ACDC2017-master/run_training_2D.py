@@ -233,7 +233,7 @@ def run(config_file, fold=0):
         for data_dict in data_gen_validation:
             data = data_dict["data"].astype(np.float32)
             seg = data_dict["seg_onehot"].astype(np.float32).transpose(0, 2, 3, 1).reshape((-1, num_classes))
-            w = np.zeros(num_classes, dtype=np.float32)
+            w = np.zeros(num_classes, dtype=np.float32)  # [0, 0, 0, 0]
             w[np.unique(seg.argmax(-1))] = 1
             loss, acc, dice = val_fn(data, seg)
             dice[w == 0] = 2
@@ -259,7 +259,7 @@ def run(config_file, fold=0):
         plotProgress(all_training_losses, all_training_accuracies, all_validation_losses, all_validation_accuracies,
                      os.path.join(results_dir, "%s.png" % EXPERIMENT_NAME), n_feedbacks_per_epoch,
                      val_dice_scores=dice_scores,
-                     dice_labels=["brain", "1", "2", "3", "4", "5"])
+                     dice_labels=["0", "1", "2", "3"])
         with open(os.path.join(results_dir, "%s_Params.pkl" % (EXPERIMENT_NAME)), 'wb') as f:
             cPickle.dump(lasagne.layers.get_all_param_values(output_layer_for_loss), f)
         with open(os.path.join(results_dir, "%s_allLossesNAccur.pkl" % (EXPERIMENT_NAME)), 'wb') as f:
@@ -286,6 +286,13 @@ if __name__ == "__main__":
     |  [266] [ 0.99889517    0.85848427   *0.91053855*   0.95131826 ]|
     |  [212] [ 0.99895227    0.92221969    0.88853139   *0.96168077*]|
     |________________________________________________________________|
+    
+     _________________________________________________________________
+    |LAST_VAL_RESULT:                                                 |
+    |   epoch   background         RV           Myo           LV      |                                             |
+    |   [299] [ 0.99855882    0.86298871    0.89322245    0.95408523 ]|
+    | ________________________________________________________________|  
+    
     ATTENTION !
         0 : background
         1 : RV
@@ -294,9 +301,13 @@ if __name__ == "__main__":
         (from left to right : 0~3)
     """
     # f = open('/home/laisong/github/Cardiac-segmentation/ACDC2017-master/result/ACDC_lasagne/UNet2D_final/fold0/UNet2D_final_allLossesNAccur.pkl','rb')
+    # # n = cPickle.load(f)
+    #
     # all_training_losses, all_training_accuracies, all_validation_losses,all_validation_accuracies, all_val_dice_scores= cPickle.load(f)
     # # print(np.array(all_val_dice_scores).size)
     # all_val_dice_scores_numpy = np.array(all_val_dice_scores).reshape(300,4)
+    # print(all_val_dice_scores_numpy[299])
+    # [0.99855882 0.86298871 0.89322245 0.95408523]
     # index = np.argmax(all_val_dice_scores_numpy,axis=0)
     # print(index.reshape(4,1))
     # for i in range(len(index)):

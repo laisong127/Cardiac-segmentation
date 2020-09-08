@@ -105,7 +105,7 @@ def process_patient(args):
         all_img = np.vstack(img_as_list)
     except:
         print (id, "has a problem with spacings")
-    np.save(os.path.join(folder_out, "pat_%03.0d" % id), all_img.astype(np.float32))
+    # np.save(os.path.join(folder_out, "pat_%03.0d" % id), all_img.astype(np.float32))
 
 
 def run_preprocessing(folder_out=None, keep_z_spacing=True):
