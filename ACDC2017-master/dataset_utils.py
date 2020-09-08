@@ -27,6 +27,14 @@ OUTPUT_FOLDER_FOR_2D_DATA = '/home/laisong/ACDC2017/2d_train'  # Where to save t
 OUTPUT_FOLDER_FOR_3D_DATA = '/home/laisong/ACDC2017/3d_train'  # Where to save training data for 3d network
 new_dataset_preprocessed_for_2D_v2 = '/home/laisong/ACDC2017/2d_train'
 
+"""
+Attention:
+    True size = image size * pixel_spacing
+Example:
+    image size = (100,100) pixel_spacing = (0.5,0.5) --> Ture size = (50,50)
+    now we want change pixel_spacing to (2,2) --> new image size = (25,25) 
+"""
+
 def resize_image(image, old_spacing, new_spacing, order=3):
     new_shape = (int(np.round(old_spacing[0]/new_spacing[0]*float(image.shape[0]))),
                  int(np.round(old_spacing[1]/new_spacing[1]*float(image.shape[1]))),
@@ -196,4 +204,9 @@ if __name__ == "__main__":
     # for i in range(n):
     #     x = cPickle.load(f)
     #     print(x)
-    f.close()
+    """
+    n.keys() = dict_keys([1, 2, 3, 4, 5, 6, ...,100]
+    for example, n[1]:
+        {'ed': 1, 'es': 12, 'height': 184.0, 'pathology': 'DCM', 'weight': 95.0}
+        dict_keys(['ed', 'es', 'height', 'pathology', 'weight'])
+    """

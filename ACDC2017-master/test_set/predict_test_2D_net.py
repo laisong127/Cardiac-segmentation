@@ -16,7 +16,7 @@
 import matplotlib
 matplotlib.use('agg')
 import numpy as np
-import cPickle
+import _pickle as cPickle
 import lasagne
 import theano
 import os
@@ -26,7 +26,7 @@ import theano.tensor
 import SimpleITK as sitk
 from utils import predict_patient_2D_net, get_split, softmax_helper, resize_softmax_output
 import imp
-from preprocess_test_set import generate_patient_info, preprocess
+from test_set.preprocess_test_set import generate_patient_info, preprocess
 from dataset_utils import resize_image
 
 
@@ -35,7 +35,7 @@ def predict_test(pred_fn, results_out_folder, test_keys, dataset_root_raw, BATCH
                  target_spacing=(None, 1.25, 1.25)):
     patient_info = generate_patient_info(dataset_root_raw)
     for patient_id in test_keys:
-        print patient_id
+        print(patient_id)
         if not os.path.isdir(results_out_folder):
             os.mkdir(results_out_folder)
 
@@ -69,7 +69,7 @@ def predict_test(pred_fn, results_out_folder, test_keys, dataset_root_raw, BATCH
 
 def run(config_file, fold=0):
     cf = imp.load_source('cf', config_file)
-    print fold
+    print ('fold:',fold)
     # this is seeded, will be identical each time
     test_keys = range(101, 151)
 
@@ -96,7 +96,7 @@ def run(config_file, fold=0):
         params = cPickle.load(f)
         lasagne.layers.set_all_param_values(output_layer, params)
 
-    print "compiling theano functions"
+    print ("compiling theano functions")
     output = softmax_helper(lasagne.layers.get_output(output_layer, x_sym, deterministic=not cf.val_bayesian_prediction,
                                                       batch_norm_update_averages=False, batch_norm_use_averages=False))
     pred_fn = theano.function([x_sym], output)

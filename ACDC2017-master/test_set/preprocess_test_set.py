@@ -26,7 +26,7 @@ def generate_patient_info(folder):
     for id in range(101, 151):
         fldr = os.path.join(folder, 'patient%03.0d'%id)
         if not os.path.isdir(fldr):
-            print "could not find dir of patient ", id
+            print ("could not find dir of patient ", id)
             continue
         nfo = np.loadtxt(os.path.join(fldr, "Info.cfg"), dtype=str, delimiter=': ')
         patient_info[id] = {}
