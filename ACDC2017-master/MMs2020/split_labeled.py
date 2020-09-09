@@ -51,7 +51,7 @@ Attention: it includes title, so you'll take it from index one
 
 def generate_patient_info():
     patient_info={}
-    for id in range(1,151):
+    for id in range(1,76):
         patient_info[id] = {}
         patient_info[id]['ed'] = int(ED[id])
         patient_info[id]['es'] = int(ES[id])
@@ -74,9 +74,9 @@ def process_patient(args):
     images_4d_spacing = list(images_4d.GetSpacing())
     images_4d_numpy = sitk.GetArrayFromImage(images_4d).astype(float)
     images_spacing = (images_4d_spacing[0],images_4d_spacing[1],images_4d_spacing[2])
-    images["ed"] = sitk.GetImageFromArray(images_4d_numpy[patient_info[id]['ed']-1])
+    images["ed"] = sitk.GetImageFromArray(images_4d_numpy[patient_info[id]['ed']])
     images["ed"].SetSpacing(images_spacing)
-    images["es"] = sitk.GetImageFromArray(images_4d_numpy[patient_info[id]['es']-1])
+    images["es"] = sitk.GetImageFromArray(images_4d_numpy[patient_info[id]['es']])
     images["es"].SetSpacing(images_spacing)
 
     # if os.path.isfile(fname_seg):
@@ -84,9 +84,9 @@ def process_patient(args):
     seg_4d_spacing = seg_4d.GetSpacing()
     seg_spacing = (seg_4d_spacing[0],seg_4d_spacing[1],seg_4d_spacing[2])
     seg_4d_numoy = sitk.GetArrayFromImage(seg_4d).astype(float)
-    images["ed_seg"] = sitk.GetImageFromArray(seg_4d_numoy[patient_info[id]['ed']-1])
+    images["ed_seg"] = sitk.GetImageFromArray(seg_4d_numoy[patient_info[id]['ed']])
     images["ed_seg"].SetSpacing(seg_spacing)
-    images["es_seg"] = sitk.GetImageFromArray(seg_4d_numoy[patient_info[id]['es'] - 1])
+    images["es_seg"] = sitk.GetImageFromArray(seg_4d_numoy[patient_info[id]['es']])
     images["es_seg"].SetSpacing(seg_spacing)
 
     print (id, images["es_seg"].GetSpacing())
@@ -118,19 +118,45 @@ def run_preprocessing(folder_out=None, keep_z_spacing=True):
         cPickle.dump(patient_info, f)
 
     # beware of z spacing!!! see process_patient for more info!
-    ids = range(1,151)
+    ids = range(1,76)
     p = pool.Pool(processes=8)
-    ZIP = list(zip(ids, [patient_info]*100, [folder_out]*100, [keep_z_spacing]*100))
-    p.map(process_patient, zip(ids, [patient_info]*150, [folder_out]*150, [keep_z_spacing]*150))
+    ZIP = list(zip(ids, [patient_info]*75, [folder_out]*75, [keep_z_spacing]*75))
+    p.map(process_patient, zip(ids, [patient_info]*75, [folder_out]*75, [keep_z_spacing]*75))
     p.close()
     p.join()
 
+def load_dataset(ids=range(100), root_dir=MMS_2D_TRAIN):
+    with open(os.path.join(root_dir, "patient_info.pkl"), 'rb') as f:
+        patient_info = cPickle.load(f)
+
+    data = {}
+    for i in ids:
+        if os.path.isfile(os.path.join(root_dir, "pat_%03.0d.npy"%i)):
+            a = np.load(os.path.join(root_dir, "pat_%03.0d.npy"%i), mmap_mode='r')
+            data[i] = {}
+            data[i]['code'] = patient_info[i]['code']
+            data[i]['centre'] = patient_info[i]['centre']
+            data[i]['vendor'] = patient_info[i]['vendor']
+            data[i]['ed_data'] = a[0, :]
+            data[i]['ed_gt'] = a[1, :]
+            data[i]['es_data'] = a[2, :]
+            data[i]['es_gt'] = a[3, :]
+    return data
+
 if __name__ == "__main__":
-    import argparse
-    parser = argparse.ArgumentParser()
-    parser.add_argument("-out2d", help="folder where to save the data for the 2d network", type=str,default=MMS_2D_TRAIN)
-    parser.add_argument("-out3d", help="folder where to save the data for the 3d network", type=str,default=MMS_3D_TRAIN)
-    args = parser.parse_args()
-    run_preprocessing(args.out2d, True)
-    run_preprocessing(args.out3d, False)
+    # import argparse
+    # parser = argparse.ArgumentParser()
+    # parser.add_argument("-out2d", help="folder where to save the data for the 2d network", type=str,default=MMS_2D_TRAIN)
+    # parser.add_argument("-out3d", help="folder where to save the data for the 3d network", type=str,default=MMS_3D_TRAIN)
+    # args = parser.parse_args()
+    # run_preprocessing(args.out2d, True)
+    # run_preprocessing(args.out3d, False)
+
+    # f = open('/home/laisong/ACDC2017/mms_vendorA_2d_train/patient_info.pkl', 'rb')
+    # n = cPickle.load(f)  # 读出文件的数据个数
+    pass
+
+    # for i in range(1,76):
+    #     array = np.load('/home/laisong/ACDC2017/mms_vendorA_2d_train/pat_%03d.npy' % i)
+    #     print(i,np.max(array[3])) # (4, 10, 320, 270)
 

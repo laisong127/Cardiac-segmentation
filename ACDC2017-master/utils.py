@@ -203,7 +203,7 @@ def compute_typical_metrics(seg_gt, seg_pred, labels):
 def get_split(fold, seed=12345):
     # this is seeded, will be identical each time
     kf = KFold(n_splits=5, shuffle=True, random_state=seed)
-    all_keys = np.arange(1, 101)
+    all_keys = np.arange(1, 76)
     splits = kf.split(all_keys)
     for i, (train_idx, test_idx) in enumerate(splits):
         train_keys = all_keys[train_idx]

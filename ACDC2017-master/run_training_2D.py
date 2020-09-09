@@ -26,8 +26,13 @@ import _pickle as cPickle
 from utils import plotProgress
 import time
 from utils import soft_dice, hard_dice
-from BatchGenerator import BatchGenerator_2D
-from dataset_utils import load_dataset
+
+# from BatchGenerator import BatchGenerator_2D
+from MMs2020.MMS_BatchGenerator import BatchGenerator_2D
+
+# from dataset_utils import load_dataset
+from MMs2020.split_labeled import load_dataset
+
 from utils import get_split
 import imp
 from batchgenerators.dataloading import MultiThreadedAugmenter, SingleThreadedAugmenter
@@ -75,6 +80,7 @@ def run(config_file, fold=0):
     cf = imp.load_source('cf', config_file)
     print('fold:', fold)
     dataset_root = cf.dataset_root
+    print('train path: {}'.format(dataset_root))
     # ==================================================================================================================
     BATCH_SIZE = cf.BATCH_SIZE
     INPUT_PATCH_SIZE = cf.INPUT_PATCH_SIZE
@@ -110,6 +116,8 @@ def run(config_file, fold=0):
 
     data_gen_validation = BatchGenerator_2D(val_data, BATCH_SIZE, num_batches=None, seed=False,
                                             PATCH_SIZE=INPUT_PATCH_SIZE)
+    # No data augmentation in valuation
+
     data_gen_validation = MultiThreadedAugmenter(data_gen_validation,
                                                  ConvertSegToOnehotTransform(range(num_classes), 0, "seg_onehot"),
                                                  1, 2, [0])

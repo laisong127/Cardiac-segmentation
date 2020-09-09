@@ -60,6 +60,10 @@ def run(config_file_2d, output_folder):
                 # resize softmax to original image size
                 # softmax_3d = resize_softmax_pred(res_3d[tpe], raw.shape, 3)
                 softmax_2d = resize_softmax_pred(res_2d[tpe], raw.shape, 3)  # softmax_2d shape(4,10,256,232)
+                """
+                res_2d[tpe].shape may be changed because of the transfering of spacing,
+                this operation aims to recover the res_2d[tpe] to original shape(raw.shape)
+                """
 
                 # all_softmax += [softmax_3d[None], softmax_2d[None]]
             # predicted_seg = postprocess_prediction(np.vstack(all_softmax).mean(0).argmax(0))

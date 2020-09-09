@@ -196,11 +196,12 @@ if __name__ == "__main__":
     # run_preprocessing(args.i, args.out2d, True)
     # run_preprocessing(args.i, args.out3d, False)
 
-    # array = np.load(OUTPUT_FOLDER_FOR_2D_DATA+'/pat_001.npy')
-    # print(array.shape) # (4, 10, 320, 270)
+    # array = np.load('/home/laisong/ACDC2017/mms_vendorA_2d_train/pat_001.npy')
+    # print(np.max(array[3])) # (4, 10, 320, 270)
 
-    f = open(OUTPUT_FOLDER_FOR_2D_DATA+'/patient_info.pkl', 'rb')
-    n = cPickle.load(f)  # 读出文件的数据个数
+    # f = open('/home/laisong/ACDC2017/mms_vendorA_2d_train/patient_info.pkl', 'rb')
+    # n = cPickle.load(f)  # 读出文件的数据个数
+    # pass
     # for i in range(n):
     #     x = cPickle.load(f)
     #     print(x)

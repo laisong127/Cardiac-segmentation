@@ -19,12 +19,13 @@ import lasagne
 import sys
 import theano.tensor as T
 from network import build_UNet_relu_BN_ds
-from paths import path_acdc_2d, results_folder
+from paths import path_mms_2d, results_folder,path_acdc_2d
 
 # training
 x_sym = T.tensor4()
 seg_sym = T.matrix()
-dataset_root = path_acdc_2d
+# dataset_root = path_acdc_2d
+dataset_root = path_mms_2d
 # ======================================================================================================================
 np.random.seed(65432)
 lasagne.random.set_rng(np.random.RandomState(98765))
@@ -32,10 +33,15 @@ sys.setrecursionlimit(2000)
 BATCH_SIZE = 2
 INPUT_PATCH_SIZE = (352, 352)
 num_classes = 4
-EXPERIMENT_NAME = "UNet2D_final"
-if not os.path.isdir(os.path.join(results_folder, "ACDC_lasagne")):
-    os.mkdir(os.path.join(results_folder, "ACDC_lasagne"))
-results_dir = os.path.join(results_folder, "ACDC_lasagne", EXPERIMENT_NAME)
+EXPERIMENT_NAME = "UNet2D_forMMS_final"
+# if not os.path.isdir(os.path.join(results_folder, "ACDC_lasagne")):
+#     os.mkdir(os.path.join(results_folder, "ACDC_lasagne"))
+# results_dir = os.path.join(results_folder, "ACDC_lasagne", EXPERIMENT_NAME)
+# if not os.path.isdir(results_dir):
+#     os.mkdir(results_dir)
+if not os.path.isdir(os.path.join(results_folder, "MMS_lasagne")):
+    os.mkdir(os.path.join(results_folder, "MMS_lasagne"))
+results_dir = os.path.join(results_folder, "MMS_lasagne", EXPERIMENT_NAME)
 if not os.path.isdir(results_dir):
     os.mkdir(results_dir)
 n_epochs = 300
