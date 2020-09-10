@@ -97,6 +97,7 @@ def run(config_file, fold=0):
     n_feedbacks_per_epoch = cf.n_feedbacks_per_epoch  # 10
     num_workers = cf.num_workers
     workers_seeds = cf.workers_seeds
+    print('basiclr: {},lr-decay: {}'.format(cf.base_lr,cf.lr_decay))
     # ==================================================================================================================
 
     # this is seeded, will be identical each time
@@ -168,6 +169,7 @@ def run(config_file, fold=0):
     all_training_accuracies = []
     all_val_dice_scores = []
     epoch = 0
+    val_min = 0
 
     while epoch < n_epochs:
         if epoch == 100:
@@ -194,6 +196,9 @@ def run(config_file, fold=0):
         train_loss_tmp = 0
         batch_ctr = 0
         for data_dict in data_gen_train:
+            # first call "__iter__(self)" in class BatchGenerator_2D for iter
+            # And then call "__next__()" in class BatchGenerator_2D for looping
+            # As a result, it will generate a random batch data every time, much probably different
             data = data_dict["data"].astype(np.float32)
             # print(data.shape) (2,1,352,352) where batchsize = 2
             seg = data_dict["seg_onehot"].astype(np.float32).transpose(0, 2, 3, 1).reshape((-1, num_classes))
@@ -239,18 +244,21 @@ def run(config_file, fold=0):
         valid_batch_ctr = 0
         all_dice = []
         for data_dict in data_gen_validation:
-            data = data_dict["data"].astype(np.float32)
-            seg = data_dict["seg_onehot"].astype(np.float32).transpose(0, 2, 3, 1).reshape((-1, num_classes))
+            data = data_dict["data"].astype(np.float32)  # print(data.shape) (2,1,352,352) where batchsize = 2
+            seg = data_dict["seg_onehot"].astype(np.float32).transpose(0, 2, 3, 1).reshape((-1, num_classes))  # (2,4,352,352) --> (2,353,353,4)-->(2*352*352,4)
             w = np.zeros(num_classes, dtype=np.float32)  # [0, 0, 0, 0]
             w[np.unique(seg.argmax(-1))] = 1
             loss, acc, dice = val_fn(data, seg)
             dice[w == 0] = 2
+            #  if there are some class was not be classified, abandon it when calculate mean of dice
             all_dice.append(dice)
             val_loss += loss
             accuracies.append(acc)
             valid_batch_ctr += 1
             if valid_batch_ctr > (n_test_batches - 1):
                 break
+            # Making a valuation every epoch
+            # n_test_batches(here is 10) batches in a valuation
         all_dice = np.vstack(all_dice)
         dice_means = np.zeros(num_classes)
         for i in range(num_classes):
@@ -268,8 +276,15 @@ def run(config_file, fold=0):
                      os.path.join(results_dir, "%s.png" % EXPERIMENT_NAME), n_feedbacks_per_epoch,
                      val_dice_scores=dice_scores,
                      dice_labels=["0", "1", "2", "3"])
-        with open(os.path.join(results_dir, "%s_Params.pkl" % (EXPERIMENT_NAME)), 'wb') as f:
-            cPickle.dump(lasagne.layers.get_all_param_values(output_layer_for_loss), f)
+        mul_except_background = np.array([[0],[1],[1],[1]])
+        mean_123 = (np.dot(dice_means,mul_except_background))/3
+        if mean_123 > val_min:
+            print('=========================================================================')
+            print('epoch {} val123mean_min change to {:.3f} ,updating saved net params......'.format(epoch,mean_123.item()))
+            print('=========================================================================')
+            val_min = (np.dot(dice_means,mul_except_background))/3
+            with open(os.path.join(results_dir, "%s_Params.pkl" % (EXPERIMENT_NAME)), 'wb') as f:
+                cPickle.dump(lasagne.layers.get_all_param_values(output_layer_for_loss), f)
         with open(os.path.join(results_dir, "%s_allLossesNAccur.pkl" % (EXPERIMENT_NAME)), 'wb') as f:
             cPickle.dump([all_training_losses, all_training_accuracies, all_validation_losses,
                           all_validation_accuracies, all_val_dice_scores], f)
@@ -285,7 +300,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
     run(args.c, args.f)
 
-    """
+    """                     ACDC 2D
     BESE_VAL_RESULT:
      ________________________________________________________________
     |  epoch   background         RV           Myo           LV      |
@@ -301,6 +316,10 @@ if __name__ == "__main__":
     |   [299] [ 0.99855882    0.86298871    0.89322245    0.95408523 ]|
     | ________________________________________________________________|  
     
+    BEAT MEAN:
+        [241] [ 0.9991104     0.94312811    0.89640695    0.95641023 ] [0.93198176]
+    
+    
     ATTENTION !
         0 : background
         1 : RV
@@ -308,15 +327,56 @@ if __name__ == "__main__":
         3 : LV
         (from left to right : 0~3)
     """
+    """                     MMS 2D lr_decay=0.985
+        BESE_VAL_RESULT:
+         ________________________________________________________________
+        |  epoch   background         LV           Myo           RV      |
+        |  [251] [  0.999345     0.79871339   0.80450892     0.83771408] |     
+        |  [279] [  0.99876821   0.95691586   0.85037786     0.91591978] |
+        |  [128] [  0.99878865   0.94033778   0.88093317     0.81281739] |
+      * |  [279] [  0.99876821   0.95691586   0.85037786     0.91591978] |  MEAN : 0.90773783  (BEST)
+        |________________________________________________________________|
+       
+         _________________________________________________________________
+        |LAST_VAL_RESULT:                                                 |
+        |   epoch   background         LV           Myo           RV      |                                             
+        |   [299] [ 0.99794847     0.77378231    0.64043868    0.53501087]|
+        | ________________________________________________________________|  
+        
+                               MMS 2D lr_decay=0.98
+         
+        best_val dice:  [ 0.99844408 0.95781767 0.84975064 0.91590458 ] epoch[279]
+        last_val dice:  [ 0.99758875 0.75564557 0.61036021 0.41069821 ]
+
+        ATTENTION !
+            0 : background
+            1 : LV
+            2 : Myo
+            3 : RV
+            (from left to right : 0~3)
+        """
+    # # f = open('/home/laisong/github/Cardiac-segmentation/ACDC2017-master/result/MMS_lasagne/UNet2D_forMMS_final/fold0/UNet2D_forMMS_final_allLossesNAccur.pkl','rb')
     # f = open('/home/laisong/github/Cardiac-segmentation/ACDC2017-master/result/ACDC_lasagne/UNet2D_final/fold0/UNet2D_final_allLossesNAccur.pkl','rb')
     # # n = cPickle.load(f)
-    #
+    # #
     # all_training_losses, all_training_accuracies, all_validation_losses,all_validation_accuracies, all_val_dice_scores= cPickle.load(f)
-    # # print(np.array(all_val_dice_scores).size)
+    # # # print(np.array(all_val_dice_scores).size)
     # all_val_dice_scores_numpy = np.array(all_val_dice_scores).reshape(300,4)
-    # print(all_val_dice_scores_numpy[299])
-    # [0.99855882 0.86298871 0.89322245 0.95408523]
+    # print(all_val_dice_scores_numpy[241])
+    # # print(all_val_dice_scores_numpy[299])
+    # # [0.99855882 0.86298871 0.89322245 0.95408523]
     # index = np.argmax(all_val_dice_scores_numpy,axis=0)
     # print(index.reshape(4,1))
     # for i in range(len(index)):
     #     print(all_val_dice_scores_numpy[index[i]])
+    # val_dice = all_val_dice_scores_numpy
+    # val_dice[:,0]= 0
+    # print(val_dice)
+    # mul = np.array([[1],
+    #                 [1],
+    #                 [1],
+    #                 [1]])
+    # mean = (np.dot(val_dice,mul)/3)
+    # print(mean.argmax(0),mean[mean.argmax(0)])
+
+

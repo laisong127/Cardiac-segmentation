@@ -8,6 +8,7 @@
 # # print(np.array(pred).mean(0))
 # print(numpy[None])
 import matplotlib
+import theano
 from skimage.transform import resize
 
 from UNet2D_config import dataset_root_raw
@@ -16,11 +17,11 @@ from UNet2D_config import dataset_root_raw
 import numpy as np
 import _pickle as cPickle
 # import lasagne
-# import theano
+# import theano as T
 import os
 import sys
 sys.path.append("../")
-# import theano.tensor
+import theano.tensor as T
 import SimpleITK as sitk
 from utils import predict_patient_2D_net, get_split, softmax_helper, resize_softmax_output
 import imp
@@ -33,32 +34,64 @@ from skimage import transform, data
 import matplotlib.pyplot as plt
 matplotlib.use('TkAgg')
 
-im = Image.open('/home/laisong/cvlab/trainCvlab/img/train001.png')
+w = np.zeros(4, dtype=np.float32)
+print(w)
+w[[2,3]] = 1
+print(w)
+print([w==0])
+dice = np.array([0.1,0.2,0.3,0.4])
+print(dice.shape)
+import numpy as np
+import theano.tensor as T
+from theano import function
 
-img = data.camera()
-print(np.array(img).shape)
-print(np.array(img))
-dst = transform.resize(img, (256, 256))*255
-print(np.array(dst).shape)
-print(np.array(dst))
-plt.figure('resize')
+x=T.dvector()
+# y=T.matrix('y')
+z=x
+a=T.vector()
+out=a
+f=function([a],out,allow_input_downcast=True)
 
-plt.subplot(131)
-plt.title('before resize')
-plt.imshow(img, plt.cm.gray)
+print (f([0.1,0.2]))
 
-plt.subplot(132)
-plt.title('resize')
-plt.imshow(dst, plt.cm.gray)
+f=function([x],z)
+dice = f(dice)
+dice[w==0] = 2
+print(dice)
+print(dice[1] != 2)
 
-plt.subplot(133)
-plt.title('001')
-plt.imshow(im)
-plt.tight_layout(h_pad=2.0)
+dice = np.array(dice)
+# dice[w == 0] = 2
+print(dice.argmax(-1))
 
-plt.show()
+#=====================================================================
+# im = Image.open('/home/laisong/cvlab/trainCvlab/img/train001.png')
+#
+# img = data.camera()
+# print(np.array(img).shape)
+# print(np.array(img))
+# dst = transform.resize(img, (256, 256))*255
+# print(np.array(dst).shape)
+# print(np.array(dst))
+# plt.figure('resize')
+#
+# plt.subplot(131)
+# plt.title('before resize')
+# plt.imshow(img, plt.cm.gray)
+#
+# plt.subplot(132)
+# plt.title('resize')
+# plt.imshow(dst, plt.cm.gray)
+#
+# plt.subplot(133)
+# plt.title('001')
+# plt.imshow(im)
+# plt.tight_layout(h_pad=2.0)
+#
+# plt.show()
+#===========================================================================
 
-
+#===========================================================================
 # im = Image.open('/home/laisong/cvlab/trainCvlab/img/train001.png')
 # im_as_numpy = np.array(im)
 # im_shape = np.array(im_as_numpy.shape)
@@ -67,7 +100,9 @@ plt.show()
 #
 # new_im.save('test.png')
 # new_im.show()
+#===========================================================================
 
+#===========================================================================
 # ed_image = sitk.ReadImage('/home/laisong/ACDC2017/training_all/patient001/patient001_frame01.nii.gz')
 # old_spacing = np.array(ed_image.GetSpacing())
 # print('old_spacing: {}'.format(old_spacing))
@@ -80,3 +115,4 @@ plt.show()
 #             np.float32)
 # print('respacing_img_shape: {}'.format(respacing_img.shape))
 # print(old_img==respacing_img)
+#===========================================================================

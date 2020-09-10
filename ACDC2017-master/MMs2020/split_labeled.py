@@ -13,11 +13,13 @@ TOTAL_DATA = MMSCONFIG.MMs_TOTAL_DATA
 IMG_PATH = MMSCONFIG.IMG_PATH
 LABEL_PATH = MMSCONFIG.LABEL_PATH
 MMS_2D_TRAIN = MMSCONFIG.MMS_2D_TRAIN
+MMS_2D_TRAIN_B = MMSCONFIG.MMS_2D_TRAIN_B
+
 MMS_3D_TRAIN = MMSCONFIG.MMS_3D_TRAIN
 
 
 
-MMs_info = xlrd.open_workbook(MMSCONFIG.MMs_info)
+MMs_info = xlrd.open_workbook(MMSCONFIG.MMs_info_B)
 sheet = MMs_info.sheet_by_index(0) # 索引的方式，从0开始
 # col_data=sheet.col_values(0)  # 获取第一列的内容
 # row_data=sheet.row_values(0)  # 获取第一行的内容
@@ -89,7 +91,7 @@ def process_patient(args):
     images["es_seg"] = sitk.GetImageFromArray(seg_4d_numoy[patient_info[id]['es']])
     images["es_seg"].SetSpacing(seg_spacing)
 
-    print (id, images["es_seg"].GetSpacing())
+    print (patient_info[id]['code'], images["es_seg"].GetSpacing())
 
     for k in images.keys():
         #print k
@@ -105,7 +107,7 @@ def process_patient(args):
         all_img = np.vstack(img_as_list)
     except:
         print (id, "has a problem with spacings")
-    # np.save(os.path.join(folder_out, "pat_%03.0d" % id), all_img.astype(np.float32))
+    np.save(os.path.join(folder_out, "pat_%03.0d" % id), all_img.astype(np.float32))
 
 
 def run_preprocessing(folder_out=None, keep_z_spacing=True):
@@ -146,17 +148,17 @@ def load_dataset(ids=range(100), root_dir=MMS_2D_TRAIN):
 if __name__ == "__main__":
     # import argparse
     # parser = argparse.ArgumentParser()
-    # parser.add_argument("-out2d", help="folder where to save the data for the 2d network", type=str,default=MMS_2D_TRAIN)
-    # parser.add_argument("-out3d", help="folder where to save the data for the 3d network", type=str,default=MMS_3D_TRAIN)
+    # parser.add_argument("-out2d", help="folder where to save the data for the 2d network", type=str,default=MMS_2D_TRAIN_B)
+    # # parser.add_argument("-out3d", help="folder where to save the data for the 3d network", type=str,default=MMS_3D_TRAIN)
     # args = parser.parse_args()
     # run_preprocessing(args.out2d, True)
     # run_preprocessing(args.out3d, False)
 
-    # f = open('/home/laisong/ACDC2017/mms_vendorA_2d_train/patient_info.pkl', 'rb')
-    # n = cPickle.load(f)  # 读出文件的数据个数
+    f = open('/home/laisong/ACDC2017/mms_vendorB_2d_train/patient_info.pkl', 'rb')
+    n = cPickle.load(f)  # 读出文件的数据个数
     pass
 
     # for i in range(1,76):
-    #     array = np.load('/home/laisong/ACDC2017/mms_vendorA_2d_train/pat_%03d.npy' % i)
+    #     array = np.load('/home/laisong/ACDC2017/mms_vendorB_2d_train/pat_%03d.npy' % i)
     #     print(i,np.max(array[3])) # (4, 10, 320, 270)
 

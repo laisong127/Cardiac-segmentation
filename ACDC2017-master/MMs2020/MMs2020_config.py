@@ -1,7 +1,10 @@
 MMs_ROOT = r'/home/laisong/MMs2020/MMsDATA/'
 MMs_TOTAL_DATA = MMs_ROOT + 'MMsDATA'
 MMs_info = MMs_ROOT + 'VENDOR_A.xlsx'
+MMs_info_B = MMs_ROOT + 'VENDOR_B.xlsx'
 IMG_PATH = MMs_ROOT + 'labeled/Img'
 LABEL_PATH = MMs_ROOT + 'labeled/label'
 MMS_2D_TRAIN = '/home/laisong/ACDC2017/mms_vendorA_2d_train'
 MMS_3D_TRAIN = '/home/laisong/ACDC2017/mms_3d_train'
+
+MMS_2D_TRAIN_B = '/home/laisong/ACDC2017/mms_vendorB_2d_train'
