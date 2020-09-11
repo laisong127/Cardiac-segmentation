@@ -18,7 +18,7 @@ import os
 import lasagne
 import sys
 import theano.tensor as T
-from network import build_UNet_relu_BN_ds
+from network import build_UNet_relu_BN_ds,build_UNet_relu_INS_ds
 from paths import path_mms_2d, results_folder, path_acdc_2d, path_mms_vendorB_2d
 
 # training
@@ -33,7 +33,7 @@ sys.setrecursionlimit(2000)
 BATCH_SIZE = 2
 INPUT_PATCH_SIZE = (352, 352)
 num_classes = 4
-EXPERIMENT_NAME = "UNet2D_forMMS_VENDOR-B_final"
+EXPERIMENT_NAME = "UNet2D_forMMS_VENDOR-B_instance-norm"
 # if not os.path.isdir(os.path.join(results_folder, "ACDC_lasagne")):
 #     os.mkdir(os.path.join(results_folder, "ACDC_lasagne"))
 # results_dir = os.path.join(results_folder, "ACDC_lasagne", EXPERIMENT_NAME)
@@ -49,7 +49,7 @@ n_epochs = 300
 lr_decay = np.float32(0.98)
 base_lr = np.float32(0.0005)
 n_batches_per_epoch = 100
-n_test_batches = 10
+n_test_batches = 50
 n_feedbacks_per_epoch = 10.
 num_workers = 6
 workers_seeds = [123, 1234, 12345, 123456, 1234567, 12345678]
