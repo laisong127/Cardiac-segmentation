@@ -137,6 +137,10 @@ def process_patient(args):
         #print k
         images[k] = preprocess_image(images[k], is_seg=(k == "ed_seg" or k == "es_seg"),
                                      spacing_target=(10, 1.25, 1.25), keep_z_spacing=keep_z_spc)
+        """
+        -normalize the image to 0~1
+        -change spacing if necessary
+        """
 
     img_as_list = []
     for k in ['ed', 'ed_seg', 'es', 'es_seg']:

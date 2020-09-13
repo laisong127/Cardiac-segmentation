@@ -5,6 +5,7 @@ import theano
 import _pickle as cPickle
 from MMs2020.MMS_BatchGenerator import BatchGenerator_2D
 from MMs2020.split_labeled import load_dataset
+from dataset_utils import load_dataset as ACDC_load_dataset
 from batchgenerators.dataloading import MultiThreadedAugmenter
 from batchgenerators.transforms import ConvertSegToOnehotTransform
 import UNet2D_config as cf
@@ -15,24 +16,25 @@ Params_B = '/home/laisong/github/Cardiac-segmentation/ACDC2017-master/result/' \
 Params_A = '/home/laisong/github/Cardiac-segmentation/ACDC2017-master/result/' \
            'MMS_lasagne/UNet2D_forMMS_final/fold0/UNet2D_forMMS_final_Params.pkl'
 train_keys, test_keys = get_split(0)
-all_keys = range(1,76)
+all_keys = range(1,151)
 print(test_keys)
 dataset_root_B = '/home/laisong/ACDC2017/mms_vendorB_2d_train'
 dataset_root_A = '/home/laisong/ACDC2017/mms_vendorA_2d_train'
+dataset_root_ACDC = '/home/laisong/ACDC2017/2d_train'
 BATCH_SIZE = 2
 num_classes = 4
 x_sym = cf.x_sym
 seg_sym = cf.seg_sym
-nt, net, seg_layer = cf.nt, cf.net, cf.seg_layer
+nt, net, seg_layer = cf.nt_bn, cf.net_bn, cf.seg_layer_bn
 output_layer_for_loss = net
 output_layer = seg_layer
 
 
-with open(Params_A, 'rb') as f:
+with open(Params_B, 'rb') as f:
     params = cPickle.load(f)
     lasagne.layers.set_all_param_values(output_layer, params)  # load net's params
 
-val_data = load_dataset(all_keys, root_dir=dataset_root_B)
+val_data = ACDC_load_dataset(all_keys, root_dir=dataset_root_ACDC)
 data_gen_validation = BatchGenerator_2D(val_data, BATCH_SIZE, num_batches=None, seed=False, PATCH_SIZE=cf.INPUT_PATCH_SIZE)
 data_gen_validation = MultiThreadedAugmenter(data_gen_validation,
                                              ConvertSegToOnehotTransform(range(num_classes), 0, "seg_onehot"),
@@ -63,7 +65,7 @@ for data_dict in data_gen_validation:
     #  if there are some class was not be classified, abandon it when calculate mean of dice
     all_dice.append(dice)
     valid_batch_ctr += 1
-    if valid_batch_ctr > (50 - 1):
+    if valid_batch_ctr > (200 - 1):
         break
     # Making a valuation every epoch
     # n_test_batches(here is 10) batches in a valuation

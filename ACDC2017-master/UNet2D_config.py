@@ -30,10 +30,10 @@ dataset_root = path_mms_vendorB_2d
 np.random.seed(65432)
 lasagne.random.set_rng(np.random.RandomState(98765))
 sys.setrecursionlimit(2000)
-BATCH_SIZE = 2
+BATCH_SIZE = 6
 INPUT_PATCH_SIZE = (352, 352)
 num_classes = 4
-EXPERIMENT_NAME = "UNet2D_forMMS_VENDOR-B_instance-norm"
+EXPERIMENT_NAME = "UNet2D_forMMS_VENDOR-B_bn+bigbatch"
 # if not os.path.isdir(os.path.join(results_folder, "ACDC_lasagne")):
 #     os.mkdir(os.path.join(results_folder, "ACDC_lasagne"))
 # results_dir = os.path.join(results_folder, "ACDC_lasagne", EXPERIMENT_NAME)
@@ -54,7 +54,9 @@ n_feedbacks_per_epoch = 10.
 num_workers = 6
 workers_seeds = [123, 1234, 12345, 123456, 1234567, 12345678]
 weight_decay = 1e-5
-nt, net, seg_layer = build_UNet_relu_BN_ds(1, x_sym, BATCH_SIZE, num_classes, 'same', (None, None), 48, 0.3,
+nt_ins, net_ins, seg_layer_ins = build_UNet_relu_INS_ds(1, x_sym, BATCH_SIZE, num_classes, 'same', (None, None), 48, 0.3,
+                                           lasagne.nonlinearities.leaky_rectify, bn_axes=(2, 3))
+nt_bn, net_bn, seg_layer_bn = build_UNet_relu_BN_ds(1, x_sym, BATCH_SIZE, num_classes, 'same', (None, None), 48, 0.3,
                                            lasagne.nonlinearities.leaky_rectify, bn_axes=(2, 3))
 
 # validation

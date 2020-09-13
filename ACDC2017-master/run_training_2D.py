@@ -111,7 +111,7 @@ def run(config_file, fold=0):
     x_sym = cf.x_sym
     seg_sym = cf.seg_sym
 
-    nt, net, seg_layer = cf.nt, cf.net, cf.seg_layer
+    nt, net, seg_layer = cf.nt_bn, cf.net_bn, cf.seg_layer_bn
     output_layer_for_loss = net
     # draw_to_file(lasagne.layers.get_all_layers(net), os.path.join(results_dir, 'network.png'))
 
@@ -352,6 +352,11 @@ if __name__ == "__main__":
          
         best_val dice:  [ 0.99925232 0.95059049 0.88186121 0.93081522 ]  MEAN: [0.92108897] epoch[244]
         last_val dice:  [ 0.99904287 0.92314684 0.83829176 0.91010106 ]
+       
+       
+                               MMS VENDOR-B 2D lr_decay=0.98 INSTANCE_NORM
+        best_val dice:  [ 0.99894434 0.92817491 0.86859661 0.89737648 ]  MEAN: [0.89804933] epoch[274]
+        last_val dice:  [0.99904323 0.9277119  0.86248142 0.79776305]
 
         ATTENTION !
             0 : background
@@ -360,23 +365,24 @@ if __name__ == "__main__":
             3 : RV
             (from left to right : 0~3)
         """
-    # f = open('/home/laisong/github/Cardiac-segmentation/ACDC2017-master/result/MMS_lasagne/UNet2D_forMMS_VENDOR-B_final/fold0/UNet2D_forMMS_VENDOR-B_final_allLossesNAccur.pkl','rb')
-    # # f = open('/home/laisong/github/Cardiac-segmentation/ACDC2017-master/result/ACDC_lasagne/UNet2D_final/fold0/UNet2D_final_allLossesNAccur.pkl','rb')
+    # f = open('/home/laisong/github/Cardiac-segmentation/ACDC2017-master/result/'
+    #          'MMS_lasagne/UNet2D_forMMS_VENDOR-B_instance-norm/fold0/UNet2D_forMMS_VENDOR-B_instance-norm_allLossesNAccur.pkl','rb')
+    # # # f = open('/home/laisong/github/Cardiac-segmentation/ACDC2017-master/result/ACDC_lasagne/UNet2D_final/fold0/UNet2D_final_allLossesNAccur.pkl','rb')
     # # n = cPickle.load(f)
-    # # #
+    # # # #
     # all_training_losses, all_training_accuracies, all_validation_losses,all_validation_accuracies, all_val_dice_scores= cPickle.load(f)
-    # # # # print(np.array(all_val_dice_scores).size)
+    # # # # # print(np.array(all_val_dice_scores).size)
     # all_val_dice_scores_numpy = np.array(all_val_dice_scores).reshape(300,4)
-    # # print(all_val_dice_scores_numpy[241])
-    # # # print(all_val_dice_scores_numpy[299])
-    # # # [0.99855882 0.86298871 0.89322245 0.95408523]
-    # index = np.argmax(all_val_dice_scores_numpy,axis=0)
-    # # print(index.reshape(4,1))
-    # # for i in range(len(index)):
-    # #     print(all_val_dice_scores_numpy[index[i]])
+    # # # print(all_val_dice_scores_numpy[241])
+    # # # # print(all_val_dice_scores_numpy[299])
+    # # # # [0.99855882 0.86298871 0.89322245 0.95408523]
+    # # index = np.argmax(all_val_dice_scores_numpy,axis=0)
+    # # # print(index.reshape(4,1))
+    # # # for i in range(len(index)):
+    # # #     print(all_val_dice_scores_numpy[index[i]])
     # val_dice = all_val_dice_scores_numpy
-    # # val_dice[:,0]= 0
-    # # print(val_dice)
+    # # # val_dice[:,0]= 0
+    # # # print(val_dice)
     # mul = np.array([[0],
     #                 [1],
     #                 [1],
