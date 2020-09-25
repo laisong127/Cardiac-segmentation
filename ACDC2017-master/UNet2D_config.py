@@ -19,18 +19,18 @@ import lasagne
 import sys
 import theano.tensor as T
 from network import build_UNet_relu_BN_ds,build_UNet_relu_INS_ds
-from paths import path_mms_2d, results_folder, path_acdc_2d, path_mms_vendorB_2d
+from paths import path_mms_vendorA_2d, results_folder, path_acdc_2d, path_mms_vendorB_2d
 
 # training
 x_sym = T.tensor4()
 seg_sym = T.matrix()
-# dataset_root = path_acdc_2d
-dataset_root = path_mms_vendorB_2d
+dataset_root_mmsB = path_mms_vendorB_2d
+dataset_root_mmsA = path_mms_vendorA_2d
 # ======================================================================================================================
 np.random.seed(65432)
 lasagne.random.set_rng(np.random.RandomState(98765))
 sys.setrecursionlimit(2000)
-BATCH_SIZE = 6
+BATCH_SIZE = 4
 INPUT_PATCH_SIZE = (352, 352)
 num_classes = 4
 EXPERIMENT_NAME = "UNet2D_forMMS_VENDOR-B_bn+bigbatch"

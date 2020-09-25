@@ -14,12 +14,14 @@ IMG_PATH = MMSCONFIG.IMG_PATH
 LABEL_PATH = MMSCONFIG.LABEL_PATH
 MMS_2D_TRAIN = MMSCONFIG.MMS_2D_TRAIN
 MMS_2D_TRAIN_B = MMSCONFIG.MMS_2D_TRAIN_B
+MMS_2D_TRAIN_AandB = MMSCONFIG.MMS_2D_TRAIN_AandB
+
 
 MMS_3D_TRAIN = MMSCONFIG.MMS_3D_TRAIN
 
 
 
-MMs_info = xlrd.open_workbook(MMSCONFIG.MMs_info_B)
+MMs_info = xlrd.open_workbook(MMSCONFIG.MMs_info_AandB)
 sheet = MMs_info.sheet_by_index(0) # 索引的方式，从0开始
 # col_data=sheet.col_values(0)  # 获取第一列的内容
 # row_data=sheet.row_values(0)  # 获取第一行的内容
@@ -53,7 +55,7 @@ Attention: it includes title, so you'll take it from index one
 
 def generate_patient_info():
     patient_info={}
-    for id in range(1,76):
+    for id in range(1,151):
         patient_info[id] = {}
         patient_info[id]['ed'] = int(ED[id])
         patient_info[id]['es'] = int(ES[id])
@@ -120,10 +122,11 @@ def run_preprocessing(folder_out=None, keep_z_spacing=True):
         cPickle.dump(patient_info, f)
 
     # beware of z spacing!!! see process_patient for more info!
-    ids = range(1,76)
+    NUM = len(External_code)
+    ids = range(1,NUM+1)
     p = pool.Pool(processes=8)
-    ZIP = list(zip(ids, [patient_info]*75, [folder_out]*75, [keep_z_spacing]*75))
-    p.map(process_patient, zip(ids, [patient_info]*75, [folder_out]*75, [keep_z_spacing]*75))
+    ZIP = list(zip(ids, [patient_info]*NUM, [folder_out]*NUM, [keep_z_spacing]*NUM))
+    p.map(process_patient, zip(ids, [patient_info]*NUM, [folder_out]*NUM, [keep_z_spacing]*NUM))
     p.close()
     p.join()
 
@@ -148,17 +151,17 @@ def load_dataset(ids=range(100), root_dir=MMS_2D_TRAIN):
 if __name__ == "__main__":
     # import argparse
     # parser = argparse.ArgumentParser()
-    # parser.add_argument("-out2d", help="folder where to save the data for the 2d network", type=str,default=MMS_2D_TRAIN_B)
+    # parser.add_argument("-out2d", help="folder where to save the data for the 2d network", type=str,default=MMS_2D_TRAIN_AandB)
     # # parser.add_argument("-out3d", help="folder where to save the data for the 3d network", type=str,default=MMS_3D_TRAIN)
     # args = parser.parse_args()
     # run_preprocessing(args.out2d, True)
     # run_preprocessing(args.out3d, False)
 
-    f = open('/home/laisong/ACDC2017/mms_vendorB_2d_train/patient_info.pkl', 'rb')
+    f = open('/home/laisong/ACDC2017/mms_vendorAandB_2d_train/patient_info.pkl', 'rb')
     n = cPickle.load(f)  # 读出文件的数据个数
     pass
 
     # for i in range(1,76):
-    #     array = np.load('/home/laisong/ACDC2017/mms_vendorB_2d_train/pat_%03d.npy' % i)
+    #     array = np.load('/home/laisong/ACDC2017/mms_vendorAandB_2d_train/pat_%03d.npy' % i)
     #     print(i,np.max(array[3])) # (4, 10, 320, 270)
 

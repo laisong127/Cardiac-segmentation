@@ -11,6 +11,8 @@ from batchgenerators.transforms import ConvertSegToOnehotTransform
 import UNet2D_config as cf
 import numpy as np
 from utils import soft_dice, hard_dice, get_split
+# Params_B = '/home/laisong/github/Cardiac-segmentation/ACDC2017-master/result/' \
+#            'MMS_lasagne/UNet2D_forMMS_VENDOR-B_final/fold0/UNet2D_forMMS_VENDOR-B_final_Params.pkl'
 Params_B = '/home/laisong/github/Cardiac-segmentation/ACDC2017-master/result/' \
            'MMS_lasagne/UNet2D_forMMS_VENDOR-B_final/fold0/UNet2D_forMMS_VENDOR-B_final_Params.pkl'
 Params_A = '/home/laisong/github/Cardiac-segmentation/ACDC2017-master/result/' \
@@ -21,8 +23,8 @@ print(test_keys)
 dataset_root_B = '/home/laisong/ACDC2017/mms_vendorB_2d_train'
 dataset_root_A = '/home/laisong/ACDC2017/mms_vendorA_2d_train'
 dataset_root_ACDC = '/home/laisong/ACDC2017/2d_train'
-BATCH_SIZE = 2
-num_classes = 4
+BATCH_SIZE = cf.BATCH_SIZE
+num_classes = cf.num_classes
 x_sym = cf.x_sym
 seg_sym = cf.seg_sym
 nt, net, seg_layer = cf.nt_bn, cf.net_bn, cf.seg_layer_bn
@@ -30,11 +32,11 @@ output_layer_for_loss = net
 output_layer = seg_layer
 
 
-with open(Params_B, 'rb') as f:
+with open(Params_A, 'rb') as f:
     params = cPickle.load(f)
     lasagne.layers.set_all_param_values(output_layer, params)  # load net's params
 
-val_data = ACDC_load_dataset(all_keys, root_dir=dataset_root_ACDC)
+val_data = load_dataset(all_keys, root_dir=dataset_root_B)
 data_gen_validation = BatchGenerator_2D(val_data, BATCH_SIZE, num_batches=None, seed=False, PATCH_SIZE=cf.INPUT_PATCH_SIZE)
 data_gen_validation = MultiThreadedAugmenter(data_gen_validation,
                                              ConvertSegToOnehotTransform(range(num_classes), 0, "seg_onehot"),
@@ -65,7 +67,7 @@ for data_dict in data_gen_validation:
     #  if there are some class was not be classified, abandon it when calculate mean of dice
     all_dice.append(dice)
     valid_batch_ctr += 1
-    if valid_batch_ctr > (200 - 1):
+    if valid_batch_ctr > (500 - 1):
         break
     # Making a valuation every epoch
     # n_test_batches(here is 10) batches in a valuation
@@ -77,11 +79,14 @@ val_loss /= cf.n_test_batches
 print("val dice: ", dice_means)
 
 """
-TRAIN_B---> B-test.keys()   val dice:  [ 0.99906504 0.88402373 0.81097448 0.85620385 ]
+TRAIN_B---> B-test.keys()   val dice:  [ 0.99899477 0.90863502 0.82922918 0.85747451 ] batchsize = 2 
 TRAIN_B---> B-train.keys()  val dice:  [ 0.9987281  0.9143998  0.85980201 0.85571545 ]
-TRAIN_B---> A             **val dice:  [ 0.99132174 0.32181495 0.25278461 0.12234201 ]**
+
+TRAIN_B---> A             **val dice:  [ 0.99295223 0.39576975 0.28044626 0.2094229  ]** batchsize=2 test 750 batch
+TRAIN_B---> A  batchsize=4  val dice:  [ 0.99453157 0.62202203 0.43553695 0.30885321 ]
+
 TRAIN_A---> A-train.keys()  val dice:  [ 0.9986589  0.9201231  0.82787943 0.81763309 ]
-TRAIN_A---> A-test.keys()   val dice:  [ 0.99815619 0.89771318 0.82319713 0.80467606 ]
-TRAIN-A---> B               val dice:  [ 0.99793541 0.8346163  0.72051215 0.74449378 ] 
+TRAIN_A---> A-test.keys()   val dice:  [ 0.99822176 0.89156944 0.81024128 0.78973645 ] batchsize=2
+TRAIN-A---> B               val dice:  [ 0.99797779 0.82399106 0.71177512 0.7709527  ] batchsize=2 test 750 batch
 """
 

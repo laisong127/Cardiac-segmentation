@@ -126,13 +126,14 @@ def predict_patient_2D_net(pred_fn, patient_data, do_mirroring, num_repeats, BAT
                 if m == 1:
                     data_m = data
                 elif m == 2:
-                    data_m = data[:, :, ::-1, ::-1]
+                    data_m = data[:, :, ::-1, ::-1]  # do mirroring
                 elif m == 3:
                     data_m = data[:, :, :, ::-1]
                 else:
-                    data_m = data[:, :, ::-1, :]
+                    data_m = data[:, :, ::-1, :] # reverse data in dim2
                 if BATCH_SIZE is not None:
-                    data_for_net = np.vstack([data_m] * BATCH_SIZE)
+                    data_for_net = np.vstack([data_m] * BATCH_SIZE) # from [1,1,h,w] to [batchsize,1,h,w], copy one to bitchsize
+                                                                    # for net input size
                 else:
                     data_for_net = data_m
                 p = pred_fn(data_for_net)
@@ -149,7 +150,7 @@ def predict_patient_2D_net(pred_fn, patient_data, do_mirroring, num_repeats, BAT
         stacked = np.vstack(all_preds)
         predicted_segmentation = stacked.mean(0).argmax(0)  # using mean() because of repeat operation
         seg_pred[slice] = predicted_segmentation
-        seg_pred_softmax[:, slice] = stacked.mean(0)
+        seg_pred_softmax[:, slice] = stacked.mean(0) # calculate mean because of copying
     seg_pred = postprocess_prediction(seg_pred)
     seg_pred = seg_pred[:old_shape[0], :old_shape[1], :old_shape[2]]
     patient = patient[:old_shape[0], :old_shape[1], :old_shape[2]]
@@ -327,4 +328,7 @@ def resize_softmax_output(softmax_output, new_shape, order=3):
     for i in range(softmax_output.shape[0]):
         result[i] = resize(softmax_output[i].astype(float), new_shape, order, "constant", 0, True)
     return result
+
+if __name__=='__main__':
+    print(get_split(0))
 

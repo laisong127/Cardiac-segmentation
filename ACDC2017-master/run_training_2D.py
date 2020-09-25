@@ -79,7 +79,7 @@ def create_data_gen_train(patient_data_train, BATCH_SIZE, num_classes,
 def run(config_file, fold=0):
     cf = imp.load_source('cf', config_file)
     print('fold:', fold)
-    dataset_root = cf.dataset_root
+    dataset_root = cf.dataset_root_mmsA
     print('train path: {}'.format(dataset_root))
     # ==================================================================================================================
     BATCH_SIZE = cf.BATCH_SIZE
@@ -341,7 +341,7 @@ if __name__ == "__main__":
         |LAST_VAL_RESULT:                                                 |
         |   epoch   background         LV           Myo           RV      |                                             
         |   [299] [ 0.99794847     0.77378231    0.64043868    0.53501087]|
-        | ________________________________________________________________|  
+        |_________________________________________________________________|  
         
                                MMS 2D lr_decay=0.98
          
@@ -366,7 +366,7 @@ if __name__ == "__main__":
             (from left to right : 0~3)
         """
     # f = open('/home/laisong/github/Cardiac-segmentation/ACDC2017-master/result/'
-    #          'MMS_lasagne/UNet2D_forMMS_VENDOR-B_instance-norm/fold0/UNet2D_forMMS_VENDOR-B_instance-norm_allLossesNAccur.pkl','rb')
+    #          'MMS_lasagne/UNet2D_forMMS_VENDOR-B_bn+bigbatch/fold0/UNet2D_forMMS_VENDOR-B_bn+bigbatch_allLossesNAccur.pkl','rb')
     # # # f = open('/home/laisong/github/Cardiac-segmentation/ACDC2017-master/result/ACDC_lasagne/UNet2D_final/fold0/UNet2D_final_allLossesNAccur.pkl','rb')
     # # n = cPickle.load(f)
     # # # #

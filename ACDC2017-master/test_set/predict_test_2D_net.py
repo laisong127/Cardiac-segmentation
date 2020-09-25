@@ -72,7 +72,7 @@ def run(config_file, fold=0):
     print ('fold:',fold)
     # this is seeded, will be identical each time
     test_keys = range(101, 151)
-    print('test keys: .{}'.format(test_keys))
+    print('test keys: {}'.format(test_keys))
 
     experiment_name = cf.EXPERIMENT_NAME
     results_folder = os.path.join(cf.results_dir,  "fold%d/"%fold)
@@ -83,7 +83,7 @@ def run(config_file, fold=0):
 
     x_sym = cf.x_sym
 
-    nt, net, seg_layer = cf.nt, cf.net, cf.seg_layer
+    nt, net, seg_layer = cf.nt_bn, cf.net_bn, cf.seg_layer_bn
     output_layer = seg_layer
 
     test_out_folder = cf.test_out_folder
@@ -101,11 +101,12 @@ def run(config_file, fold=0):
     output = softmax_helper(lasagne.layers.get_output(output_layer, x_sym, deterministic=not cf.val_bayesian_prediction,
                                                       batch_norm_update_averages=False, batch_norm_use_averages=False))
     pred_fn = theano.function([x_sym], output)
-    _ = pred_fn(np.random.random((BATCH_SIZE, 1, 384, 352)).astype(np.float32))
-    predict_test(pred_fn, test_out_folder, test_keys, dataset_root_raw, BATCH_SIZE=BATCH_SIZE,
-               n_repeats=n_repeats, min_size=cf.min_size,
-               input_img_must_be_divisible_by=cf.val_input_img_must_be_divisible_by, do_mirroring=cf.val_do_mirroring,
-               target_spacing=list(cf.target_spacing), preprocess_fn=preprocess)
+    _ = pred_fn(np.random.random((BATCH_SIZE, 1, 16, 16)).astype(np.float32))
+    print(_.shape)
+    # predict_test(pred_fn, test_out_folder, test_keys, dataset_root_raw, BATCH_SIZE=BATCH_SIZE,
+    #            n_repeats=n_repeats, min_size=cf.min_size,
+    #            input_img_must_be_divisible_by=cf.val_input_img_must_be_divisible_by, do_mirroring=cf.val_do_mirroring,
+    #            target_spacing=list(cf.target_spacing), preprocess_fn=preprocess)
 
 
 if __name__ == "__main__":

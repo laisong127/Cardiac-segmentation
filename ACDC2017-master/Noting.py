@@ -33,36 +33,46 @@ from PIL import Image
 from skimage import transform, data
 import matplotlib.pyplot as plt
 matplotlib.use('TkAgg')
+from skimage.morphology import label
+x = np.eye(3).astype(int)
+print(x)
+print(label(x,8))
 
-w = np.zeros(4, dtype=np.float32)
-print(w)
-w[[2,3]] = 1
-print(w)
-print([w==0])
-dice = np.array([0.1,0.2,0.3,0.4])
-print(dice.shape)
-import numpy as np
-import theano.tensor as T
-from theano import function
-
-x=T.dvector()
-# y=T.matrix('y')
-z=x
-a=T.vector()
-out=a
-f=function([a],out,allow_input_downcast=True)
-
-print (f([0.1,0.2]))
-
-f=function([x],z)
-dice = f(dice)
-dice[w==0] = 2
-print(dice)
-print(dice[1] != 2)
-
-dice = np.array(dice)
-# dice[w == 0] = 2
-print(dice.argmax(-1))
+# data = np.array([1,2,3])
+# print(data)
+# data = np.vstack([data]*3)
+#
+#
+# w = np.zeros(4, dtype=np.float32)
+# print(w)
+# w[[2,3]] = 1
+# print(w)
+# print([w==0])
+# dice = np.array([0.1,0.2,0.3,0.4])
+# print(dice.shape)
+# import numpy as np
+# import theano.tensor as T
+# from theano import function
+#
+#
+# x=T.dvector()
+# # y=T.matrix('y')
+# z=x
+# a=T.vector()
+# out=a
+# f=function([a],out,allow_input_downcast=True)
+#
+# print (f([0.1,0.2]))
+#
+# f=function([x],z)
+# dice = f(dice)
+# dice[w==0] = 2
+# print(dice)
+# print(dice[1] != 2)
+#
+# dice = np.array(dice)
+# # dice[w == 0] = 2
+# print(dice.argmax(-1))
 
 #=====================================================================
 # im = Image.open('/home/laisong/cvlab/trainCvlab/img/train001.png')
