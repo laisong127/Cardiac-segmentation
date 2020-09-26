@@ -26,9 +26,9 @@ from skimage.transform import resize
 
 def postprocess_prediction(seg):
     # basically look for connected components and choose the largest one, delete everything else
-    mask = seg != 0
-    lbls = label(mask, 8)
-    lbls_sizes = [np.sum(lbls==i) for i in np.unique(lbls)]
+    mask = seg != 0 # change label to {0,1} 0:background 1:mask(many be not one kind)
+    lbls = label(mask, 8) # calculate number of connected region
+    lbls_sizes = [np.sum(lbls==i) for i in np.unique(lbls)] # calculate every region's number
     largest_region = np.argmax(lbls_sizes[1:]) + 1 # from 1 because need excluding the background
     seg[lbls != largest_region]=0  # only allow one pred region,set others to zero
     return seg

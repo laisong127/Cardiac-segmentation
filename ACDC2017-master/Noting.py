@@ -37,10 +37,14 @@ from skimage.morphology import label
 
 # for i,tpe in enumerate(['ed', 'es']):
 #     print(i,tpe)
-x = np.array([[1,0,0],
-              [1,1,0],
-              [0,0,1]])
-mask = x != 0
+x = np.array([[[0,0,0],
+              [0,0,0],
+              [0,0,0]],
+              [[1, 0, 1],
+               [2, 0, 0],
+               [3, 1, 0]]
+              ])
+mask = np.array(x != 0).astype(int)
 lbls = label(mask,4 )
 lbls_sizes = [np.sum(lbls==i) for i in np.unique(lbls)]
 largest_region = np.argmax(lbls_sizes[1:]) + 1 # from 1 because need excluding the background
