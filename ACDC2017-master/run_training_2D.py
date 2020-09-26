@@ -292,13 +292,13 @@ def run(config_file, fold=0):
 
 
 if __name__ == "__main__":
-    import argparse
-
-    parser = argparse.ArgumentParser()
-    parser.add_argument("-f", help="fold", type=int, default=0)
-    parser.add_argument("-c", help="config file", type=str, default='./UNet2D_config.py')
-    args = parser.parse_args()
-    run(args.c, args.f)
+    # import argparse
+    #
+    # parser = argparse.ArgumentParser()
+    # parser.add_argument("-f", help="fold", type=int, default=0)
+    # parser.add_argument("-c", help="config file", type=str, default='./UNet2D_config.py')
+    # args = parser.parse_args()
+    # run(args.c, args.f)
 
     """                     ACDC 2D
     BESE_VAL_RESULT:
@@ -365,6 +365,8 @@ if __name__ == "__main__":
             3 : RV
             (from left to right : 0~3)
         """
+    data = np.load('/home/laisong/ACDC2017/mms_vendorAandB_2d_train/pat_005.npy')
+    print(data[1])
     # f = open('/home/laisong/github/Cardiac-segmentation/ACDC2017-master/result/'
     #          'MMS_lasagne/UNet2D_forMMS_VENDOR-B_bn+bigbatch/fold0/UNet2D_forMMS_VENDOR-B_bn+bigbatch_allLossesNAccur.pkl','rb')
     # # # f = open('/home/laisong/github/Cardiac-segmentation/ACDC2017-master/result/ACDC_lasagne/UNet2D_final/fold0/UNet2D_final_allLossesNAccur.pkl','rb')

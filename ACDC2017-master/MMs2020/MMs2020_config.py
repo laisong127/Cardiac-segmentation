@@ -1,5 +1,5 @@
 MMs_ROOT = r'/home/laisong/MMs2020/MMsDATA/'
-MMs_TOTAL_DATA = MMs_ROOT + 'MMsDATA'
+MMs_TOTAL_DATA = MMs_ROOT + 'labeled'
 MMs_info_AandB = MMs_ROOT + 'M&Ms Dataset Information.xlsx'
 MMs_info = MMs_ROOT + 'VENDOR_A.xlsx'
 MMs_info_B = MMs_ROOT + 'VENDOR_B.xlsx'

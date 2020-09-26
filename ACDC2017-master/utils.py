@@ -29,8 +29,8 @@ def postprocess_prediction(seg):
     mask = seg != 0
     lbls = label(mask, 8)
     lbls_sizes = [np.sum(lbls==i) for i in np.unique(lbls)]
-    largest_region = np.argmax(lbls_sizes[1:]) + 1
-    seg[lbls != largest_region]=0
+    largest_region = np.argmax(lbls_sizes[1:]) + 1 # from 1 because need excluding the background
+    seg[lbls != largest_region]=0  # only allow one pred region,set others to zero
     return seg
 
 

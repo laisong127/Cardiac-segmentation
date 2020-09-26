@@ -34,9 +34,21 @@ from skimage import transform, data
 import matplotlib.pyplot as plt
 matplotlib.use('TkAgg')
 from skimage.morphology import label
-x = np.eye(3).astype(int)
+
+# for i,tpe in enumerate(['ed', 'es']):
+#     print(i,tpe)
+x = np.array([[1,0,0],
+              [1,1,0],
+              [0,0,1]])
+mask = x != 0
+lbls = label(mask,4 )
+lbls_sizes = [np.sum(lbls==i) for i in np.unique(lbls)]
+largest_region = np.argmax(lbls_sizes[1:]) + 1 # from 1 because need excluding the background
+x[lbls != largest_region]=0
 print(x)
-print(label(x,8))
+print(np.argmax(x))
+print(x)
+print(label(x,4))
 
 # data = np.array([1,2,3])
 # print(data)
