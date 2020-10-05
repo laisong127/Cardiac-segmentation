@@ -33,7 +33,7 @@ sys.setrecursionlimit(2000)
 BATCH_SIZE = 4
 INPUT_PATCH_SIZE = (352, 352)
 num_classes = 4
-EXPERIMENT_NAME = "UNet2D_forMMS_VENDOR-B_bn+bigbatch"
+EXPERIMENT_NAME = "VAE"
 # if not os.path.isdir(os.path.join(results_folder, "ACDC_lasagne")):
 #     os.mkdir(os.path.join(results_folder, "ACDC_lasagne"))
 # results_dir = os.path.join(results_folder, "ACDC_lasagne", EXPERIMENT_NAME)
@@ -47,7 +47,8 @@ if not os.path.isdir(results_dir):
 n_epochs = 300
 # lr_decay = np.float32(0.985)
 lr_decay = np.float32(0.98)
-base_lr = np.float32(0.0005)
+# base_lr = np.float32(0.0005)
+base_lr = np.float32(0.001)
 n_batches_per_epoch = 100
 n_test_batches = 50
 n_feedbacks_per_epoch = 10.

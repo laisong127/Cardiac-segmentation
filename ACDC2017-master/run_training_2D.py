@@ -25,7 +25,7 @@ import _pickle as cPickle
 # import cPickle
 from utils import plotProgress
 import time
-from utils import soft_dice, hard_dice
+from utils import soft_dice, hard_dice,weight_soft_dice
 
 # from BatchGenerator import BatchGenerator_2D
 from MMs2020.MMS_BatchGenerator import BatchGenerator_2D
@@ -79,7 +79,7 @@ def create_data_gen_train(patient_data_train, BATCH_SIZE, num_classes,
 def run(config_file, fold=0):
     cf = imp.load_source('cf', config_file)
     print('fold:', fold)
-    dataset_root = cf.dataset_root_mmsA
+    dataset_root = cf.dataset_root_mmsB
     print('train path: {}'.format(dataset_root))
     # ==================================================================================================================
     BATCH_SIZE = cf.BATCH_SIZE
@@ -131,7 +131,7 @@ def run(config_file, fold=0):
     prediction_train = lasagne.layers.get_output(output_layer_for_loss, x_sym, deterministic=False,
                                                  batch_norm_update_averages=False, batch_norm_use_averages=False)
 
-    loss_vec = - soft_dice(prediction_train, seg_sym)
+    loss_vec = - weight_soft_dice(prediction_train, seg_sym)
 
     loss = loss_vec.mean()
     loss += l2_loss
@@ -226,9 +226,10 @@ def run(config_file, fold=0):
 
             if batch_ctr > (n_batches_per_epoch - 1):
                 break
-            loss_vec, acc, l = train_fn(data, seg)
+            loss_vec, acc, l = train_fn(data, seg)  # type: Array
 
             loss = loss_vec.mean()
+
             train_loss += loss
             train_loss_tmp += loss
             train_acc_tmp += acc
@@ -292,13 +293,13 @@ def run(config_file, fold=0):
 
 
 if __name__ == "__main__":
-    # import argparse
-    #
-    # parser = argparse.ArgumentParser()
-    # parser.add_argument("-f", help="fold", type=int, default=0)
-    # parser.add_argument("-c", help="config file", type=str, default='./UNet2D_config.py')
-    # args = parser.parse_args()
-    # run(args.c, args.f)
+    import argparse
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-f", help="fold", type=int, default=0)
+    parser.add_argument("-c", help="config file", type=str, default='./UNet2D_config.py')
+    args = parser.parse_args()
+    run(args.c, args.f)
 
     """                     ACDC 2D
     BESE_VAL_RESULT:
@@ -365,8 +366,8 @@ if __name__ == "__main__":
             3 : RV
             (from left to right : 0~3)
         """
-    data = np.load('/home/laisong/ACDC2017/mms_vendorAandB_2d_train/pat_005.npy')
-    print(data[1])
+    # data = np.load('/home/laisong/ACDC2017/mms_vendorAandB_2d_train/pat_005.npy')
+    # print(data[1])
     # f = open('/home/laisong/github/Cardiac-segmentation/ACDC2017-master/result/'
     #          'MMS_lasagne/UNet2D_forMMS_VENDOR-B_bn+bigbatch/fold0/UNet2D_forMMS_VENDOR-B_bn+bigbatch_allLossesNAccur.pkl','rb')
     # # # f = open('/home/laisong/github/Cardiac-segmentation/ACDC2017-master/result/ACDC_lasagne/UNet2D_final/fold0/UNet2D_final_allLossesNAccur.pkl','rb')

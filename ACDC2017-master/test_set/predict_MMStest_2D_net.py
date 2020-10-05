@@ -65,7 +65,7 @@ def run(config_file, fold=0):
 
     experiment_name = cf.EXPERIMENT_NAME
     results_folder = os.path.join(cf.results_dir,  "fold%d/"%fold)
-    dataset_root_raw = paths.path_mms_vendorAandB_2d
+    dataset_root_raw = paths.path_mms_vendorB_2d
 
     BATCH_SIZE = cf.BATCH_SIZE
     n_repeats = cf.val_num_repeats
@@ -99,14 +99,14 @@ def run(config_file, fold=0):
 
 
 if __name__ == "__main__":
-    # import argparse
-    # parser = argparse.ArgumentParser()
-    # parser.add_argument("-f", help="fold", type=int, default=0)
-    # parser.add_argument("-c", help="config file", type=str, default='/home/laisong/github/Cardiac-segmentation/ACDC2017-master/UNet2D_config.py')
-    # args = parser.parse_args()
-    # run(args.c, args.f)
-    data = np.load('/home/laisong/github/Cardiac-segmentation/ACDC2017-master/'
-                   'result/MMS_lasagne/UNet2D_forMMS_VENDOR-B_bn+bigbatch/test_predictions/fold0/patient005_2D_net.npz')
-    es = data['es'] # (4,13,256,208)
-
-    pass
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-f", help="fold", type=int, default=0)
+    parser.add_argument("-c", help="config file", type=str, default='/home/laisong/github/Cardiac-segmentation/ACDC2017-master/UNet2D_config.py')
+    args = parser.parse_args()
+    run(args.c, args.f)
+    # data = np.load('/home/laisong/github/Cardiac-segmentation/ACDC2017-master/'
+    #                'result/MMS_lasagne/UNet2D_forMMS_VENDOR-B_bn+bigbatch/test_predictions/fold0/patient005_2D_net.npz')
+    # es = data['es'] # (4,13,256,208)
+    #
+    # pass

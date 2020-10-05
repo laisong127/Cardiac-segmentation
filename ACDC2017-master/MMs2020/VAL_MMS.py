@@ -14,7 +14,7 @@ from utils import soft_dice, hard_dice, get_split
 # Params_B = '/home/laisong/github/Cardiac-segmentation/ACDC2017-master/result/' \
 #            'MMS_lasagne/UNet2D_forMMS_VENDOR-B_final/fold0/UNet2D_forMMS_VENDOR-B_final_Params.pkl'
 Params_B = '/home/laisong/github/Cardiac-segmentation/ACDC2017-master/result/' \
-           'MMS_lasagne/UNet2D_forMMS_VENDOR-B_final/fold0/UNet2D_forMMS_VENDOR-B_final_Params.pkl'
+           'MMS_lasagne/UNet2D_forMMS_VENDOR-B_bn+bigbatch/fold0/UNet2D_forMMS_VENDOR-B_bn+bigbatch_Params.pkl'
 Params_A = '/home/laisong/github/Cardiac-segmentation/ACDC2017-master/result/' \
            'MMS_lasagne/UNet2D_forMMS_final/fold0/UNet2D_forMMS_final_Params.pkl'
 train_keys, test_keys = get_split(0)
@@ -32,11 +32,11 @@ output_layer_for_loss = net
 output_layer = seg_layer
 
 
-with open(Params_A, 'rb') as f:
+with open(Params_B, 'rb') as f:
     params = cPickle.load(f)
     lasagne.layers.set_all_param_values(output_layer, params)  # load net's params
 
-val_data = load_dataset(all_keys, root_dir=dataset_root_B)
+val_data = load_dataset(test_keys, root_dir=dataset_root_A)
 data_gen_validation = BatchGenerator_2D(val_data, BATCH_SIZE, num_batches=None, seed=False, PATCH_SIZE=cf.INPUT_PATCH_SIZE)
 data_gen_validation = MultiThreadedAugmenter(data_gen_validation,
                                              ConvertSegToOnehotTransform(range(num_classes), 0, "seg_onehot"),
@@ -67,7 +67,7 @@ for data_dict in data_gen_validation:
     #  if there are some class was not be classified, abandon it when calculate mean of dice
     all_dice.append(dice)
     valid_batch_ctr += 1
-    if valid_batch_ctr > (500 - 1):
+    if valid_batch_ctr > (150 - 1):
         break
     # Making a valuation every epoch
     # n_test_batches(here is 10) batches in a valuation
@@ -75,7 +75,7 @@ all_dice = np.vstack(all_dice)
 dice_means = np.zeros(num_classes)
 for i in range(num_classes):
     dice_means[i] = all_dice[all_dice[:, i] != 2, i].mean()
-val_loss /= cf.n_test_batches
+
 print("val dice: ", dice_means)
 
 """

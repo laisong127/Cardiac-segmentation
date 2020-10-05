@@ -16,17 +16,42 @@
 import numpy as np
 import _pickle as cPickle
 import SimpleITK as sitk
+import theano
+
 from test_set.preprocess_test_set import generate_patient_info
 import os
 import sys
 sys.path.append("../")
-from utils import postprocess_prediction, get_split
+from utils import postprocess_prediction, get_split, soft_dice, hard_dice, test_hard_dice
 from skimage.transform import resize
 import imp
 CONFIG_FILE_2D = '/home/laisong/github/Cardiac-segmentation/ACDC2017-master/UNet2D_config.py'
 import paths
 import MMs2020.MMs2020_config as MMSCONFIG
+import theano.tensor as T
 
+
+def test_dice(pred_path,true_path,file_index,vendor_path):
+    f = open(os.path.join(vendor_path,'patient_info.pkl'), 'rb')
+    patient_info = cPickle.load(f)  # 读出文件的数据个数
+    Dice = []
+    print(file_index)
+
+    for i in file_index:
+        for tpe in ['ED','ES']:
+            data_path = os.path.join(pred_path,'patient%03d'%i+'_%s'%tpe+'.nii.gz')
+            pred_data = sitk.ReadImage(data_path)
+            pred_data = sitk.GetArrayFromImage(pred_data)
+
+            label_path = os.path.join(true_path,patient_info[i]['code']+'_%s'%(tpe.lower()+'_seg.gt.nii.gz'))
+            label_data = sitk.ReadImage(label_path)
+            label_data = sitk.GetArrayFromImage(label_data)
+
+            dice_tmp = test_hard_dice(pred_data,label_data,n_classes=4)
+            Dice.append(dice_tmp)
+    Dice = np.array(Dice)
+    Dice_mean = np.mean(Dice,axis=0)
+    return Dice_mean
 
 def run(config_file_2d, output_folder):
     cf_2d = imp.load_source("cf_2d", config_file_2d)
@@ -38,7 +63,7 @@ def run(config_file_2d, output_folder):
     # results_folder_3D = os.path.join(cf_3d.results_dir, "test_predictions/")
 
     results_folder_2D = cf_2d.test_out_folder
-    f = open('/home/laisong/ACDC2017/mms_vendorAandB_2d_train/patient_info.pkl', 'rb')
+    f = open('/home/laisong/ACDC2017/mms_vendorB_2d_train/patient_info.pkl', 'rb')
     patient_info = cPickle.load(f)  # 读出文件的数据个数
 
     if not os.path.isdir(output_folder):  # if folder not exist, create it
@@ -52,6 +77,7 @@ def run(config_file_2d, output_folder):
         return reshaped
 
     train_keys, test_keys = get_split(0)
+    print(test_keys)
     for patient in test_keys:
 
         ed = 0
@@ -79,17 +105,23 @@ def run(config_file_2d, output_folder):
             predicted_seg = postprocess_prediction(softmax_2d.argmax(0))
 
             itk_seg = sitk.GetImageFromArray(predicted_seg.astype(np.uint8))
-            itk_seg.CopyInformation(raw_itk)
+            # itk_seg.CopyInformation(raw_itk)
 
             sitk.WriteImage(itk_seg, os.path.join(output_folder, "patient%03.0d_%s.nii.gz" % (patient, tpe.upper())))
 
 
 
 if __name__ == "__main__":
-    import argparse
-    parser = argparse.ArgumentParser()
-    parser.add_argument("-c2d", help="config file for 2d network", type=str, default=CONFIG_FILE_2D)
-    # parser.add_argument("-c3d", help="config file for 3d network", type=str)
-    parser.add_argument("-o", help="output folder", type=str, default='./submit_MMS_file')
-    args = parser.parse_args()
-    run(args.c2d, args.o)
+    # import argparse
+    # parser = argparse.ArgumentParser()
+    # parser.add_argument("-c2d", help="config file for 2d network", type=str, default=CONFIG_FILE_2D)
+    # # parser.add_argument("-c3d", help="config file for 3d network", type=str)
+    # parser.add_argument("-o", help="output folder", type=str, default='./submit_MMS_file')
+    # args = parser.parse_args()
+    # run(args.c2d, args.o)
+    pred_path = '/home/laisong/github/submit_MMS_file'
+    label_path = '/home/laisong/MMs2020/MMS_ED_ES/label'
+    train_keys,test_keys = get_split(0)
+    vendor_path = paths.path_mms_vendorAandB_2d
+    dice = test_dice(pred_path,label_path,test_keys,vendor_path)
+    print(dice)

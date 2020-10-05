@@ -14,6 +14,7 @@
 
 
 import matplotlib
+import theano
 from sklearn.metrics import confusion_matrix
 matplotlib.use('Agg')
 import numpy as np
@@ -223,6 +224,30 @@ def soft_dice(y_pred, y_true):
     dice_scores = T.constant(2) * intersect / (denominator + T.constant(1e-6))
     return dice_scores
 
+def weight_soft_dice(y_pred, y_true, w=None):
+    # y_pred is softmax output of shape (num_samples, num_classes)
+    # y_true is one hot encoding of target (shape= (num_samples, num_classes))
+    if w is None:
+        w = [1, 1, 4, 2]
+    y_pred_i = []
+    count = np.sum(np.array(w))
+    for i in range(4):
+        y_pred_i.append(y_pred[:,i])
+    y_true_i = []
+    for i in range(4):
+        y_true_i.append(y_true[:,i])
+    intersect = []
+    denominator = []
+    dice_scores_i = []
+    for i in range(4):
+        intersect.append(T.sum(y_pred_i[i] * y_true_i[i], 0))
+        denominator.append(T.sum(y_pred_i[i], 0) + T.sum(y_true_i[i], 0))
+        dice_scores_i.append(T.constant(2) * intersect[i] / (T.constant(8)*(denominator[i] + T.constant(1e-6))))
+    dice_scores = (T.constant(w[0])*dice_scores_i[0]+T.constant(w[1])*dice_scores_i[1]\
+                  +T.constant(w[2])*dice_scores_i[2]+T.constant(w[3])*dice_scores_i[3])
+
+
+    return dice_scores
 
 def hard_dice(y_pred, y_true, n_classes):
     # y_true must be label map, not one hot encoding
@@ -238,7 +263,20 @@ def hard_dice(y_pred, y_true, n_classes):
         dice = T.set_subtensor(dice[i], (T.constant(2.) * T.sum(y_true_i * y_pred_i) + T.constant(1e-7)) /
                                (T.sum(y_true_i) + T.sum(y_pred_i) + T.constant(1e-7)))
     return dice
+def test_hard_dice(y_pred, y_true, n_classes):
+    # y_true must be label map, not one hot encoding
+    y_true = y_true.flatten()
+    y_pred = y_pred.flatten()
 
+    dice =[]
+
+    for i in range(n_classes):
+        i_val = i
+        y_true_i = np.equal(y_true, i_val)
+        y_pred_i = np.equal(y_pred, i_val)
+        dice.append((2 * np.sum(y_true_i * y_pred_i) + 1e-7)/(np.sum(y_true_i) + np.sum(y_pred_i) + 1e-7))
+    dice = np.array(dice)
+    return dice
 
 def plotProgress(all_training_losses, all_training_accs, all_validation_losses, all_valid_accur, fname,
                  samplesPerEpoch=10, val_dice_scores=None, dice_labels=None, ylim_score=None):
@@ -328,6 +366,19 @@ def resize_softmax_output(softmax_output, new_shape, order=3):
     for i in range(softmax_output.shape[0]):
         result[i] = resize(softmax_output[i].astype(float), new_shape, order, "constant", 0, True)
     return result
+
+def F_loss(y_true,y_pred):
+    '''
+
+    :param y_true: true seg mask (not one_hot)
+    :param y_pred:  reconstruction mask (not one_hot)
+    :return: F_loss
+    '''
+    y_true = T.flatten(y_true)
+    y_pred = T.argmax(y_pred)
+    loss = (y_true-y_pred)**2
+
+    return loss
 
 if __name__=='__main__':
     print(get_split(0))

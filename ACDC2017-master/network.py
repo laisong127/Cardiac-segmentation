@@ -15,13 +15,15 @@
 
 
 from lasagne.layers import InputLayer, DimshuffleLayer, ReshapeLayer, ConcatLayer, NonlinearityLayer, instance_norm, \
-    ElemwiseSumLayer, DropoutLayer, Pool2DLayer, Upscale2DLayer,instance_norm,batch_norm
+    ElemwiseSumLayer, DropoutLayer, Pool2DLayer, Upscale2DLayer, instance_norm, batch_norm
 
 from collections import OrderedDict
 from lasagne.init import HeNormal
 from lasagne.nonlinearities import linear
 import lasagne
 from lasagne.layers import Conv2DLayer as ConvLayer
+from lasagne.layers import TransposedConv2DLayer,DenseLayer,NINLayer
+
 
 
 
@@ -221,5 +223,94 @@ def build_UNet_relu_BN_ds(n_input_channels=1, input_var=None, BATCH_SIZE=None, n
     net['output_flattened'] = NonlinearityLayer(net['reshapeSeg'], nonlinearity=lasagne.nonlinearities.softmax) # softmax faltten tensor
 
     return net, net['output_flattened'], seg_layer
+
+
+def VAE(n_input_channels=1, input_var=None, BATCH_SIZE=None, pad='same',
+                          input_dim=(128, 128), base_n_filters=64,
+                          nonlinearity=lasagne.nonlinearities.rectify):
+    net = OrderedDict()
+    net['input'] = InputLayer((BATCH_SIZE, n_input_channels, input_dim[0], input_dim[1]), input_var)
+    net['contr_1'] = batch_norm(ConvLayer(net['input'], base_n_filters, 3, nonlinearity=nonlinearity, pad=pad,
+                                              W=lasagne.init.HeNormal(gain="relu")))
+    net['contr__2_1'] = batch_norm(ConvLayer(net['contr_1'], base_n_filters, 3,stride=(2,2), nonlinearity=nonlinearity, pad=pad,
+                                            W=lasagne.init.HeNormal(gain="relu")))
+    net['contr__2_2'] = batch_norm(ConvLayer(net['contr__2_1'], base_n_filters, 3, stride=(1, 1), nonlinearity=nonlinearity, pad=pad,
+                                            W=lasagne.init.HeNormal(gain="relu")))
+
+    net['contr__3_1'] = batch_norm(ConvLayer(net['contr__2_2'], base_n_filters, 3, stride=(2, 2), nonlinearity=nonlinearity, pad=pad,
+                                            W=lasagne.init.HeNormal(gain="relu")))
+    net['contr__3_2'] = batch_norm(ConvLayer(net['contr__3_1'], base_n_filters, 3, stride=(1, 1), nonlinearity=nonlinearity, pad=pad,
+                                            W=lasagne.init.HeNormal(gain="relu")))
+
+    net['contr__4_1'] = batch_norm(ConvLayer(net['contr__3_2'], base_n_filters, 3, stride=(2, 2), nonlinearity=nonlinearity, pad=pad,
+                                            W=lasagne.init.HeNormal(gain="relu")))
+    net['contr__4_2'] = batch_norm(ConvLayer(net['contr__4_1'], base_n_filters, 3, stride=(1, 1), nonlinearity=nonlinearity, pad=pad,
+                                            W=lasagne.init.HeNormal(gain="relu")))
+
+    net['contr__5_1'] = batch_norm(ConvLayer(net['contr__4_2'], base_n_filters, 3, stride=(2, 2), nonlinearity=nonlinearity, pad=pad,
+                                            W=lasagne.init.HeNormal(gain="relu")))
+    net['contr__5_2'] = batch_norm(ConvLayer(net['contr__5_1'], base_n_filters, 3, stride=(1, 1), nonlinearity=nonlinearity, pad=pad,
+                                            W=lasagne.init.HeNormal(gain="relu")))
+    net['contr__6_1'] = batch_norm(ConvLayer(net['contr__5_2'], base_n_filters, 3, stride=(2, 2), nonlinearity=nonlinearity, pad=pad,
+                                            W=lasagne.init.HeNormal(gain="relu")))
+    net['contr__6_2'] = batch_norm(ConvLayer(net['contr__6_1'], base_n_filters, 3, stride=(1, 1), nonlinearity=nonlinearity, pad=pad,
+                                            W=lasagne.init.HeNormal(gain="relu")))
+    net['dimshuffle'] = DimshuffleLayer(net['contr__6_2'], (0, 2, 3, 1))  # change dimensions
+    batch_size, n_rows, n_cols, _ = lasagne.layers.get_output(net['dimshuffle']).shape
+    net['flatten'] = ReshapeLayer(net['dimshuffle'],(BATCH_SIZE,121))  # reshape tensor as [-1,1]
+
+    net['fc_1'] = DenseLayer(net['flatten'],num_units=64,nonlinearity=nonlinearity)
+    net['fc_2']=DenseLayer(net['fc_1'],121,nonlinearity=nonlinearity)
+    net['flattened_2d'] = ReshapeLayer(net['fc_2'],(batch_size,n_input_channels,n_rows,n_cols))
+
+    net['decode__1_1'] = batch_norm(ConvLayer(net['flattened_2d'], base_n_filters, 3, stride=(1, 1), nonlinearity=nonlinearity, pad=pad,
+                                            W=lasagne.init.HeNormal(gain="relu")))
+    net['decode__1_2'] = batch_norm(TransposedConv2DLayer(net['decode__1_1'], base_n_filters, 4, stride=(2, 2), nonlinearity=nonlinearity,crop=1,
+                                            W=lasagne.init.HeNormal(gain="relu")))
+
+    net['decode__2_1'] = batch_norm(ConvLayer(net['decode__1_2'], base_n_filters, 3, stride=(1, 1), nonlinearity=nonlinearity, pad=pad,
+                                            W=lasagne.init.HeNormal(gain="relu")))
+    net['decode__2_2'] = batch_norm(TransposedConv2DLayer(net['decode__2_1'], base_n_filters, 4, stride=(2, 2), nonlinearity=nonlinearity,crop=1,
+                                            W=lasagne.init.HeNormal(gain="relu")))
+
+    net['decode__3_1'] = batch_norm(
+        ConvLayer(net['decode__2_2'], base_n_filters, 3, stride=(1, 1), nonlinearity=nonlinearity, pad=pad,
+                  W=lasagne.init.HeNormal(gain="relu")))
+    net['decode__3_2'] = batch_norm(
+        TransposedConv2DLayer(net['decode__3_1'], base_n_filters, 4, stride=(2, 2), nonlinearity=nonlinearity,crop=1,
+                              W=lasagne.init.HeNormal(gain="relu")))
+
+    net['decode__4_1'] = batch_norm(
+        ConvLayer(net['decode__3_2'], base_n_filters, 3, stride=(1, 1), nonlinearity=nonlinearity, pad=pad,
+                  W=lasagne.init.HeNormal(gain="relu")))
+    net['decode__4_2'] = batch_norm(
+        TransposedConv2DLayer(net['decode__4_1'], base_n_filters, 4, stride=(2, 2), nonlinearity=nonlinearity,crop=1,
+                              W=lasagne.init.HeNormal(gain="relu")))
+
+    net['decode__5_1'] = batch_norm(
+        ConvLayer(net['decode__4_2'], base_n_filters, 3, stride=(1, 1), nonlinearity=nonlinearity,pad=pad,
+                  W=lasagne.init.HeNormal(gain="relu")))
+    net['decode__5_2'] = batch_norm(
+        TransposedConv2DLayer(net['decode__5_1'], base_n_filters, 4, stride=(2, 2), nonlinearity=nonlinearity,crop=1,
+                              W=lasagne.init.HeNormal(gain="relu")))
+    return  net['decode__5_2']
+    pass
+
+if __name__=='__main__':
+    import theano.tensor as T
+    import theano
+    import numpy as np
+
+    x_sym = T.tensor4()
+    # nt_ins, net_ins, seg_layer_ins = build_UNet_relu_BN_ds(1, x_sym, 2, 4, 'same', (None, None), 48,
+    #                                                         0.3,lasagne.nonlinearities.leaky_rectify, bn_axes=(2, 3))
+    nt_vae = VAE(1, x_sym, 2, 'same', (None, None), 1,lasagne.nonlinearities.leaky_rectify)
+    prediction_train = lasagne.layers.get_output(nt_vae, x_sym, deterministic=False,
+                                                 batch_norm_update_averages=False, batch_norm_use_averages=False)
+    pred = theano.function([x_sym],prediction_train)
+    inputs = np.random.randn(2,1,352,352).astype(np.float32)
+    print(inputs.shape)
+    _ = pred(inputs)
+    print(type(_),_.shape)
 
 

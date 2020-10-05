@@ -7,6 +7,7 @@
 # # data = np.zeros(tuple([1] + [1] + list(new_shp[1:])), dtype=np.float32)
 # # print(np.array(pred).mean(0))
 # print(numpy[None])
+import lasagne
 import matplotlib
 import theano
 from skimage.transform import resize
@@ -34,9 +35,50 @@ from skimage import transform, data
 import matplotlib.pyplot as plt
 matplotlib.use('TkAgg')
 from skimage.morphology import label
-
+x_sym = T.matrix()
+from lasagne.layers import InputLayer, DenseLayer
+l_in = InputLayer((8, 20))
+l1 = DenseLayer(l_in, num_units=2)
+inputs = np.random.randn(8,20).astype(np.float32)
+out = lasagne.layers.get_output(l1, x_sym)
+pred = theano.function([x_sym],out)
+outputs = pred(inputs)
+print(outputs.shape)
+x=np.array([[1,2,3],[1,2,1]])
+y = np.array([[1,1,3],[1,2,1]])
+z=x-y
+z = z**2
 # for i,tpe in enumerate(['ed', 'es']):
 #     print(i,tpe)
+    # y_pred is softmax output of shape (num_samples, num_classes)
+    # y_true is one hot encoding of target (shape= (num_samples, num_classes))
+def weight_soft_dice(y_pred, y_true, w=None):
+    # y_pred is softmax output of shape (num_samples, num_classes)
+    # y_true is one hot encoding of target (shape= (num_samples, num_classes))
+    if w is None:
+        w = [1, 1, 4, 2]
+    y_pred_i = []
+    count = np.sum(np.array(w))
+    for i in range(4):
+        y_pred_i.append(y_pred[:,i])
+    y_true_i = []
+    for i in range(4):
+        y_true_i.append(y_true[:,i])
+    intersect = []
+    denominator = []
+    dice_scores_i = []
+    for i in range(4):
+        intersect.append(T.sum(y_pred_i[i] * y_true_i[i], 0))
+        denominator.append(T.sum(y_pred_i[i], 0) + T.sum(y_true_i[i], 0))
+        dice_scores_i.append(T.constant(2) * intersect[i] / (denominator[i] + T.constant(1e-6)))
+    dice_scores = (T.constant(w[0])*dice_scores_i[0]+T.constant(w[1])*dice_scores_i[1]\
+                  +T.constant(w[2])*dice_scores_i[2]+T.constant(w[3])*dice_scores_i[3])
+    x = T.matrix('total')
+    z = x/8
+    divide = theano.function([x],z)
+    dice_scores = divide(dice_scores)
+
+    return dice_scores
 x = np.array([[[0,0,0],
               [0,0,0],
               [0,0,0]],
